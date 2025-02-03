@@ -61,6 +61,8 @@ echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}${COL
 # Check if required environment variables are set
 for var in \
     NPP_USER \
+    NPP_UID \
+    NPP_GID \
     WORDPRESS_DB_USER \
     WORDPRESS_DB_PASSWORD \
     WORDPRESS_DB_NAME \
@@ -79,6 +81,14 @@ done
 # Wait for 'wordpress-fpm' container with 'fpm' up
 # We need to sure '/var/www/html' exists for 'wp-cli'
 wait_for_service "wordpress" 9001
+
+# Own website with Isolated PHP process owner user 'npp'
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Setting ownership of ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} to user/group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} with UID ${COLOR_CYAN}${NPP_UID}${COLOR_RESET} and GID ${COLOR_CYAN}${NPP_GID}${COLOR_RESET}."
+chown -R "${NPP_UID}":"${NPP_GID}" "${NPP_WEB_ROOT}"
+
+# Set proper permission to restrict environment for 'others'
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Setting permissions for ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} to completely isolate the environment."
+chmod -R u=rwX,g=rX,o= "${NPP_WEB_ROOT}"
 
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Initiating WordPress installation and configuration..."
 # Install WordPress in the background after the container starts
