@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: wordpress/Dockerfile
-    image: ghcr.io/psaux-it/npp-wordpress/wordpress:latest
+    image: ghcr.io/psaux-it/wordpress-nginx-cache-docker/wordpress:latest
     container_name: wordpress-fpm
     expose:
       - "9001"
@@ -60,7 +60,7 @@ services:
     build:
       context: .
       dockerfile: mysql/Dockerfile
-    image: ghcr.io/psaux-it/npp-wordpress/mysql:latest
+    image: ghcr.io/psaux-it/wordpress-nginx-cache-docker/mysql:latest
     container_name: wordpress-db
     env_file:
       - .env
@@ -80,7 +80,7 @@ services:
     build:
       context: .
       dockerfile: nginx/Dockerfile
-    image: ghcr.io/psaux-it/npp-wordpress/nginx:latest
+    image: ghcr.io/psaux-it/wordpress-nginx-cache-docker/nginx:latest
     container_name: nginx
     env_file:
       - .env
