@@ -58,8 +58,10 @@ wait_for_service() {
 # Display pre-entrypoint start message
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} ${COLOR_CYAN}${COLOR_BOLD}[Pre-Entrypoint]:${COLOR_RESET} Preparing environment before starting the ${COLOR_LIGHT_CYAN}Nginx${COLOR_RESET} service..."
 
-# Wait for 'wordpress' service up with 'wp-cli'
+# Wait for 'php-fpm' to be up
 wait_for_service "wordpress" 9001
+
+# Wait for Wordpress core Initialization to complete
 wait_for_service "wordpress" 9999
 
 # Check if required environment variables are set
@@ -81,8 +83,8 @@ else
 fi
 
 # Add webserver-user to PHP process owner group
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Adding webserver-user ${COLOR_LIGHT_CYAN}${NGINX_WEB_USER}${COLOR_RESET} to PHP process owner group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} to give required read permissions."
 if ! id -nG "${NGINX_WEB_USER}" | grep -qw "${NPP_USER}"; then
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Adding webserver-user ${COLOR_LIGHT_CYAN}${NGINX_WEB_USER}${COLOR_RESET} to PHP process owner group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} to give required read permissions."
     usermod -aG "${NPP_USER}" "${NGINX_WEB_USER}"
 else
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} User ${COLOR_LIGHT_CYAN}${NGINX_WEB_USER}${COLOR_RESET} is already in group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} Skipping.."
