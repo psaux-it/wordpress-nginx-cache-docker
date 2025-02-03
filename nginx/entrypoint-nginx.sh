@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+#
+# Copyright (C) 2024 Hasan CALISIR <hasan.calisir@psauxit.com>
+# Distributed under the GNU General Public License, version 2.0.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# SCRIPT DESCRIPTION:
+# -------------------
+# NPP (Nginx Cache Purge & Preload for WordPress) Dockerized entrypoint
+# https://github.com/psaux-it/nginx-fastcgi-cache-purge-and-preload
+# https://wordpress.org/plugins/fastcgi-cache-purge-and-preload-nginx/
+
+set -Eeuo pipefail
+
+# Define color codes
+COLOR_RESET='\033[0m'
+COLOR_GREEN='\033[0;32m'
+COLOR_YELLOW='\033[0;33m'
+COLOR_RED='\033[0;31m'
+COLOR_CYAN='\033[0;36m'
+COLOR_BOLD='\033[1m'
+COLOR_WHITE='\033[0;97m'
+COLOR_BLACK='\033[0;30m'
+COLOR_LIGHT_CYAN='\033[0;96m'
+
+# Function to wait for a service to be available
+wait_for_service() {
+    local host="$1"
+    local port="$2"
+    local retries=30
+    local wait_time=5
+
+    while ! nc -z "${host}" "${port}"; do
+        if [[ "${retries}" -le 0 ]]; then
+            echo -e "${COLOR_RED}${COLOR_BOLD}NPP-NGINX-FATAL:${COLOR_RESET} ${COLOR_CYAN}${host}:${port}${COLOR_RESET} is not responding. Exiting..."
+            exit 1
+        fi
+        echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Waiting for ${COLOR_CYAN}${host}:${port}${COLOR_RESET} to become available..."
+        sleep "$wait_time"
+        retries=$((retries - 1))
+    done
+
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} ${COLOR_CYAN}${host}:${port}${COLOR_RESET} is now available! Proceeding..."
+}
+
+# Display pre-entrypoint start message
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} ${COLOR_CYAN}${COLOR_BOLD}[Pre-Entrypoint]:${COLOR_RESET} Preparing environment before starting the ${COLOR_LIGHT_CYAN}Nginx${COLOR_RESET} service..."
+
+# Wait for 'wordpress' service up with 'wp-cli'
+wait_for_service "wordpress" 9001
+wait_for_service "wordpress" 9999
+
+# Wait for 'wordpress' service 'post_start' hook trigger first
+#echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Waiting for ${COLOR_LIGHT_CYAN}WordPress${COLOR_RESET} service ${COLOR_LIGHT_CYAN}post_start${COLOR_RESET} hook to trigger..."
+#sleep 5
+
+# Check if required environment variables are set
+for var in NPP_UID NPP_GID NPP_USER NPP_WEB_ROOT NGINX_WEB_USER; do
+    if [[ -z "${!var:-}" ]]; then
+        echo -e "${COLOR_RED}${COLOR_BOLD}NPP-NGINX-FATAL:${COLOR_RESET} Missing required environment variable: ${COLOR_LIGHT_CYAN}${var}${COLOR_RESET} - ${COLOR_RED}Exiting...${COLOR_RESET}"
+        exit 1
+    fi
+done
+
+# Create Isolated PHP process owner user and group on Nginx container
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Checking PHP process owner user and group with UID ${COLOR_CYAN}${NPP_UID}${COLOR_RESET} and GID ${COLOR_CYAN}${NPP_GID}${COLOR_RESET}"
+if ! getent passwd "${NPP_USER}" >/dev/null 2>&1; then
+    groupadd --gid "${NPP_GID}" "${NPP_USER}"  && \
+    useradd --gid "${NPP_USER}" --no-create-home --home /nonexistent --comment "Isolated PHP Process owner" --shell /bin/false --uid "${NPP_UID}" "${NPP_USER}"
+    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} User ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} created! Proceeding..."
+else
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} User ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} already exists! Proceeding..."
+fi
+
+# Add webserver-user to PHP process owner group
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Adding webserver-user ${COLOR_LIGHT_CYAN}${NGINX_WEB_USER}${COLOR_RESET} to PHP process owner group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} to give required read permissions."
+if ! id -nG "${NGINX_WEB_USER}" | grep -qw "${NPP_USER}"; then
+    usermod -aG "${NPP_USER}" "${NGINX_WEB_USER}"
+else
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} User ${COLOR_LIGHT_CYAN}${NGINX_WEB_USER}${COLOR_RESET} is already in group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} Skipping.."
+fi
+
+# Wait until the directory exists
+echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Waiting for directory ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} to exist..."
+while [[ ! -d "${NPP_WEB_ROOT}" ]]; do
+    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Directory ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} is not ready. Retrying..."
+    sleep 2
+done
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Directory ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} is ready! Proceeding..."
+
+# Own website with Isolated PHP process owner user 'npp'
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Setting ownership of ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} to user/group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} with UID ${COLOR_CYAN}${NPP_UID}${COLOR_RESET} and GID ${COLOR_CYAN}${NPP_GID}${COLOR_RESET}."
+chown -R "${NPP_UID}":"${NPP_GID}" "${NPP_WEB_ROOT}"
+
+# Set proper permission to restrict environment for 'others'
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Setting permissions for ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} to completely isolate the environment."
+chmod -R u=rwX,g=rX,o= "${NPP_WEB_ROOT}"
+
+# Wait for wordpress-db container up
+wait_for_service "db" 3306
+
+# Execute the original entrypoint
+exec /docker-entrypoint.sh "$@"
