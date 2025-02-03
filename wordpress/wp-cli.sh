@@ -80,9 +80,6 @@ done
 # We need to sure '/var/www/html' exists for 'wp-cli'
 wait_for_service "wordpress" 9001
 
-# WP-CLI --allow-root
-export WP_CLI_ALLOW_ROOT=1
-
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Initiating WordPress installation and configuration..."
 # Install WordPress in the background after the container starts
 if ! wp core is-installed --allow-root >/dev/null 2>&1; then
