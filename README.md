@@ -1,6 +1,8 @@
-# 🐋 NPP Dockerized  [![Docker Build](https://github.com/psaux-it/wordpress-nginx-cache-docker/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/psaux-it/wordpress-nginx-cache-docker/actions/workflows/docker-publish.yml)
+# 🐳 NPP Dockerized  [![Docker Build](https://github.com/psaux-it/wordpress-nginx-cache-docker/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/psaux-it/wordpress-nginx-cache-docker/actions/workflows/docker-publish.yml)
 
 Welcome to the Docker project optimized for the **[(NPP) WordPress Plugin](https://wordpress.org/plugins/fastcgi-cache-purge-and-preload-nginx/)**! 🎉 This is a full-stack Dockerized environment designed for **optimized use of the NPP plugin**, including **WordPress**, **PHP-FPM**, **Nginx**, **FastCGI cache**, **WP-CLI**, and necessary PHP extensions. It’s tailored to run the **NPP plugin** efficiently, providing a complete solution for **Nginx Cache** management on wordpress.
+
+Explore the **[NPP Main GitHub Repository](https://github.com/psaux-it/nginx-fastcgi-cache-purge-and-preload)** to access the heart of the plugin development.
 
 ## 🔧 Features
 
@@ -78,5 +80,5 @@ docker compose up -d --build
 
 ---
 #### ⚠️ Important Notices
-🚨 **The included SSL certificates are dummy, strictly for local testing** and **must not be used in production environments**.<br>
+🚨 **The included SSL certificates are dummy, strictly for local usage** and **must not be used in production environments**.<br>
 📦 This project leverages the fantastic **work** by **[Michele Locati](https://github.com/mlocati/docker-php-extension-installer)** to streamline the installation of required PHP extensions.
