@@ -78,7 +78,7 @@ done
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Checking PHP process owner user and group with UID ${COLOR_CYAN}${NPP_UID}${COLOR_RESET} and GID ${COLOR_CYAN}${NPP_GID}${COLOR_RESET}"
 if ! getent passwd "${NPP_USER}" >/dev/null 2>&1; then
     groupadd --gid "${NPP_GID}" "${NPP_USER}"  && \
-    useradd --gid "${NPP_USER}" --no-create-home --home /nonexistent --comment "Isolated PHP Process owner" --shell /bin/false --uid "${NPP_UID}" "${NPP_USER}"
+    useradd --gid "${NPP_USER}" --no-create-home --home /nonexistent --comment "Isolated PHP Process owner" --shell /bin/bash --uid "${NPP_UID}" "${NPP_USER}"
     echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} User ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} created! Proceeding..."
 else
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} User ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} already exists! Proceeding..."
