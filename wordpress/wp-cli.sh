@@ -181,4 +181,6 @@ fi
 
 # Start to listen dummy port for catch signal
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Starting to listen on dummy port ${COLOR_CYAN}9999${COLOR_RESET}..."
-if ! nc -zv 127.0.0.1 9999 2>/dev/null; then nc -lk -p 9999 >/dev/null 2>&1 &; fi
+if ! nc -zv 127.0.0.1 9999 2>/dev/null; then
+    nc -lk -p 9999 >/dev/null 2>&1 &
+fi
