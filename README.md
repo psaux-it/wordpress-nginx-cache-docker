@@ -1,15 +1,17 @@
-# 🐋 NPP Dockerized 
+# 🐋 NPP Dockerized
 
-Welcome to the Docker project for **testing** the **[FastCGI Cache Purge and Preload for Nginx (NPP) WordPress Plugin](https://wordpress.org/plugins/fastcgi-cache-purge-and-preload-nginx/)**! 🎉 This Dockerized environment is designed exclusively for **testing and development purposes** and **is not intended for production deployment**. Below you will find everything you need to get started with testing the plugin in a containerized environment.
+Welcome to the Docker project optimized for the **[(NPP) WordPress Plugin](https://wordpress.org/plugins/fastcgi-cache-purge-and-preload-nginx/)**! 🎉 This is a full-stack Dockerized environment designed for **optimized use of the NPP plugin**, including **WordPress**, **PHP-FPM**, **Nginx**, **FastCGI cache**, **WP-CLI**, and necessary PHP extensions. It’s tailored to run the **NPP plugin** efficiently, providing a complete solution for **Nginx Cache** management on wordpress.
 
 ## 🔧 Features
 
-- ✅ WordPress **(6.7.1)** with PHP-FPM **(8.2)**
-- ✅ **FastCGI** cache setup ready with **Nginx (1.27.3)**
-- ✅ Includes all dependencies required for the **NPP** plugin
-- ✅ Isolated and secure **PHP process owner** for enhanced security and performance
-- ✅ Built with **bindfs (1.17.7)** for FUSE-based mounting of **Nginx Cache Path** 
-- ✅ Supports a wide range of PHP extensions
+- ✅ **WordPress** (6.7.1) with **PHP-FPM** (8.2)
+- ✅ **MySQL** (9) included for database management
+- ✅ **FastCGI cache** setup ready with **Nginx** (1.27.3)
+- ✅ **WP-CLI** ready for plugin and theme installations
+- ✅ Includes all dependencies required for the **NPP plugin**
+- ✅ Isolated and secure PHP process owner for enhanced security and performance
+- ✅ Built with **bindfs** (1.17.7) for FUSE-based mounting of **Nginx Cache Path**
+- ✅ Supports a wide range of **PHP extensions**
 
 ## 🔑 Environment Variables
 
@@ -42,8 +44,8 @@ These can be changed by the user:
 Start by cloning the repository to your local machine:
 
 ```bash
-git clone https://github.com/psaux-it/npp-wordpress.git
-cd npp-wordpress
+git clone https://github.com/psaux-it/wordpress-nginx-cache-docker.git
+cd wordpress-nginx-cache-docker
 ```
 
 ### 2. Run the Services
@@ -63,7 +65,18 @@ docker compose up -d --build
 ```
 
 ### 🚀 **Post-Container Startup Access**
-- Users can use the FUSE mount path **`/var/cache/nginx-mnt`** as the Nginx cache path in the NPP plugin settings page.
-- The WordPress site can be accessed at host machine:
-  - 🔒 [https://localhost:8443/](https://localhost:8443/)
-  - 🌐 [http://localhost:8080/](http://localhost:8080/)
+- The WordPress site can be accessed at the host machine:
+  - 🔒 [https://localhost](https://localhost)
+  - 🌐 [http://localhost](http://localhost)
+
+- Default WordPress **wp-admin** login credentials:
+  - **Username**: `npp`
+  - **Password**: `npp`
+
+### 🔧 **Nginx Cache Path Configuration**
+- Users can use the FUSE mount path **`/var/cache/nginx-npp`** as the Nginx cache path in the NPP plugin settings page.
+
+---
+#### ⚠️ Important Notices
+🚨 **The included SSL certificates are dummy, strictly for local testing** and **must not be used in production environments**.<br>
+📦 This project leverages the fantastic **work** by **[Michele Locati](https://github.com/mlocati/docker-php-extension-installer)** to streamline the installation of required PHP extensions.
