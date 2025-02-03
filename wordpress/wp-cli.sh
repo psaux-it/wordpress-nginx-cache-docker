@@ -122,19 +122,19 @@ echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Initiating Core Wo
 export WP_CLI_CACHE_DIR="${NPP_WEB_ROOT}/.wp-cli/cache"
 
 # Check if core WordPress is already installed
-if ! su -m -c "wp core is-installed" ${NPP_USER}; then
+if ! su -m -c "wp core is-installed" ${NPP_USER} >/dev/null 2>&1; then
     # Install WordPress if not installed
     if su -m -c "wp core install --url=\"${WORDPRESS_SITE_URL}\" \
                                  --title=\"${WORDPRESS_SITE_TITLE}\" \
                                  --admin_user=\"${WORDPRESS_ADMIN_USER}\" \
                                  --admin_password=\"${WORDPRESS_ADMIN_PASSWORD}\" \
-                                 --admin_email=\"${WORDPRESS_ADMIN_EMAIL}\"" ${NPP_USER}; then
-        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} WordPress core has been successfully installed."
+                                 --admin_email=\"${WORDPRESS_ADMIN_EMAIL}\"" ${NPP_USER} >/dev/null 2>&1; then
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}WordPress core${COLOR_RESET} has been successfully installed."
     else
-        echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} WordPress core installation failed. Please check the logs for more details."
+        echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}WordPress core${COLOR_RESET} installation failed. Please check the logs for more details."
     fi
 else
-    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} WordPress core is already installed. Skipping..."
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}WordPress core${COLOR_RESET} is already installed. Skipping..."
 fi
 
 # Trim spaces around commas and the entire string
@@ -148,8 +148,8 @@ IFS=',' read -r -a NPP_THEMES <<< "${NPP_THEMES_CLEANED}"
 # Install Plugins
 if [[ "${#NPP_PLUGINS[@]}" -gt 0 ]]; then
     for plugin in "${NPP_PLUGINS[@]}"; do
-        if ! su -m -c "wp plugin is-installed \"${plugin}\"" ${NPP_USER}; then
-            if su -m -c "wp plugin install \"${plugin}\" --activate" ${NPP_USER}; then
+        if ! su -m -c "wp plugin is-installed \"${plugin}\"" ${NPP_USER} >/dev/null 2>&1; then
+            if su -m -c "wp plugin install \"${plugin}\" --activate" ${NPP_USER} >/dev/null 2>&1; then
                 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Plugin ${COLOR_CYAN}${plugin}${COLOR_RESET} has been installed and activated."
             else
                 echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Plugin ${COLOR_CYAN}${plugin}${COLOR_RESET} installation failed. Please check the logs for more details."
@@ -159,14 +159,14 @@ if [[ "${#NPP_PLUGINS[@]}" -gt 0 ]]; then
         fi
     done
 else
-    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} No plugins to install."
+    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}No plugins${COLOR_RESET} to install."
 fi
 
 # Install Themes
 if [[ "${#NPP_THEMES[@]}" -gt 0 ]]; then
     for theme in "${NPP_THEMES[@]}"; do
-        if ! su -m -c "wp theme is-installed \"${theme}\"" ${NPP_USER}; then
-            if su -m -c "wp theme install \"${theme}\" --activate" ${NPP_USER}; then
+        if ! su -m -c "wp theme is-installed \"${theme}\"" ${NPP_USER} >/dev/null 2>&1; then
+            if su -m -c "wp theme install \"${theme}\" --activate" ${NPP_USER} >/dev/null 2>&1; then
                 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Theme ${COLOR_CYAN}${theme}${COLOR_RESET} has been installed and activated."
             else
                 echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Theme ${COLOR_CYAN}${theme}${COLOR_RESET} installation failed. Please check the logs for more details."
@@ -176,9 +176,9 @@ if [[ "${#NPP_THEMES[@]}" -gt 0 ]]; then
         fi
     done
 else
-    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} No themes to install."
+    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}No themes${COLOR_RESET} to install."
 fi
 
-# Start to listen dummy port
+# Start to listen dummy port for catch signal
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Starting to listen on dummy port ${COLOR_CYAN}9999${COLOR_RESET}..."
-nc -lk -p 9999 > /dev/null 2>&1 &
+if ! nc -zv 127.0.0.1 9999 2>/dev/null; then nc -lk -p 9999 >/dev/null 2>&1 &; fi
