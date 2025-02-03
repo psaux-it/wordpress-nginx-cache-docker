@@ -129,12 +129,12 @@ if ! su -m -c "wp core is-installed" ${NPP_USER}; then
                                  --admin_user=\"${WORDPRESS_ADMIN_USER}\" \
                                  --admin_password=\"${WORDPRESS_ADMIN_PASSWORD}\" \
                                  --admin_email=\"${WORDPRESS_ADMIN_EMAIL}\"" ${NPP_USER}; then
-        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} WordPress has been successfully installed."
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} WordPress core has been successfully installed."
     else
-        echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} WordPress installation failed. Please check the logs for more details."
+        echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} WordPress core installation failed. Please check the logs for more details."
     fi
 else
-    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} WordPress is already installed. Skipping..."
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} WordPress core is already installed. Skipping..."
 fi
 
 # Trim spaces around commas and the entire string
