@@ -1,5 +1,5 @@
 # Custom Dockerfile for mysql
-FROM mysql:latest
+FROM mysql:8.0.41-bookworm
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
