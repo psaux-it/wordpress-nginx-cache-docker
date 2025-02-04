@@ -93,5 +93,5 @@ else
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} User ${COLOR_LIGHT_CYAN}${NGINX_WEB_USER}${COLOR_RESET} is already in group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} Skipping.."
 fi
 
-# Execute the original entrypoint
+# Start nginx
 exec /docker-entrypoint.sh "$@"
