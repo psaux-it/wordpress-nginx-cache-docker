@@ -7,37 +7,19 @@ Explore the **[NPP Main GitHub Repository](https://github.com/psaux-it/nginx-fas
 ## 🔧 Features
 
 - ✅ **WordPress** (6.7.1) with **PHP-FPM** (8.2)
-- ✅ **MySQL** (9) included for database management
+- ✅ **MySQL** (8) included for database management
 - ✅ **FastCGI cache** setup ready with **Nginx** (1.27.3)
 - ✅ **WP-CLI** ready for plugin and theme installations
 - ✅ Includes all dependencies required for the **NPP plugin**
 - ✅ Isolated and secure PHP process owner for enhanced security and performance
-- ✅ Built with **bindfs** (1.17.7) for FUSE-based mounting of **Nginx Cache Path**
+- ✅ Built with **bindfs** (1.17.7) for FUSE-based mounting of **Nginx Cache Path** to prevent permission issues
 - ✅ Supports a wide range of **PHP extensions**
 
 ## 🔑 Environment Variables
 
-Here’s a list of the required environment variables for the setup:
+Please check the **.env** file for the environment variables used by the project.
 
-### 🔒 Default Variables
-
-These have default values and should not be changed. If you need to modify them, you must adjust other configurations accordingly.
-
-- **NGINX_WEB_USER**: Name of the Nginx web user (default: `nginx`)
-- **NGINX_WEB_UID**: UID for the Nginx web user (default: `101`)
-- **NGINX_WEB_GID**: GID for the Nginx web group (default: `101`)
-- **NPP_NGINX_CACHE_PATH**: Path to Nginx cache directory (default: `/var/cache/nginx`)
-- **NPP_WEB_ROOT**: Web root directory (default: `/var/www/html`)
-
-### 🛠️ User-Settable Variables
-
-These can be changed by the user:
-
-- **NPP_USER**: Name of the Isolated PHP process owner user (default: `npp`)
-- **NPP_UID**: UID for the Isolated PHP process owner user (default: `18978`)
-- **NPP_GID**: GID for the Isolated PHP process owner group (default: `33749`)
-
-> **Note:** Ensure these variables are set before running the container. The entrypoint script will fail if any of them are missing.
+Some variables can be directly modified by the user to customize the setup, while others are integral to the project's core configuration. Changing these core variables may require adjustments in other parts of the project to maintain proper integration and workflow.
 
 ## ⚙️️ Setup Instructions
 
