@@ -1,13 +1,9 @@
 name: NPP Build and Push Docker Image
 
 on:
-  schedule:
-    - cron: '43 14 * * *'
-  push:
-    branches: [ "main" ]
-    tags: [ 'v*.*.*' ]
-  pull_request:
-    branches: [ "main" ]
+  pull_request_target:
+    types:
+      - closed
 
 env:
   REGISTRY: ghcr.io
@@ -15,6 +11,7 @@ env:
 
 jobs:
   build:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
       contents: read
