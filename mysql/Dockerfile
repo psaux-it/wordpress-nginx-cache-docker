@@ -11,5 +11,5 @@ COPY mysql/entrypoint-sql.sh /entrypoint-sql.sh
 # Make sure the entrypoint script is executable
 RUN chmod +x /entrypoint-sql.sh
 
-# Default command
+# CMD
 CMD ["/entrypoint-sql.sh", "mysqld"]
