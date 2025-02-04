@@ -12,4 +12,4 @@ COPY mysql/entrypoint-sql.sh /entrypoint-sql.sh
 RUN chmod +x /entrypoint-sql.sh
 
 # Default command
-CMD ["/bin/bash", "/entrypoint-sql.sh", "mysqld"]
+CMD ["/entrypoint-sql.sh", "mysqld"]
