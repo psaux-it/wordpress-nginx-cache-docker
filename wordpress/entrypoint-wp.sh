@@ -99,5 +99,5 @@ until mysql -h wordpress-db -u"${WORDPRESS_DB_USER}" -p"${WORDPRESS_DB_PASSWORD}
 done
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} The MySQL database is ready! Proceeding..."
 
-# Start the main process (php-fpm) and continue in the background
+# Start php-fpm
 exec /usr/local/bin/docker-entrypoint.sh "$@"
