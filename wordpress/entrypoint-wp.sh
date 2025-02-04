@@ -91,12 +91,11 @@ fi
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} The Nginx Cache Path: ${COLOR_LIGHT_CYAN}${NPP_NGINX_CACHE_PATH}${COLOR_RESET} has been successfully mounted to ${COLOR_LIGHT_CYAN}${MOUNT_DIR}${COLOR_RESET} with ${COLOR_CYAN}UID:${NPP_UID}${COLOR_RESET} and ${COLOR_CYAN}GID:${NPP_GID}${COLOR_RESET}."
 
 # Wait for the 'wordpress-db' to be ready
-echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Waiting for the MySQL database to become available..."
 until mysql -h wordpress-db -u"${WORDPRESS_DB_USER}" -p"${WORDPRESS_DB_PASSWORD}" "${WORDPRESS_DB_NAME}" -e "SELECT 1" > /dev/null 2>&1; do
-    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP:${COLOR_RESET} The MySQL database is not available yet. Retrying..."
-    sleep 2
+    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP:${COLOR_RESET} The ${COLOR_LIGHT_CYAN}MySQL database${COLOR_RESET} is not available yet. Retrying..."
+    sleep 6
 done
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} The MySQL database is ready! Proceeding..."
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} The ${COLOR_LIGHT_CYAN}MySQL database${COLOR_RESET} is ready! Proceeding..."
 
 # Start php-fpm
 exec /usr/local/bin/docker-entrypoint.sh "$@"
