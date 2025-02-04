@@ -62,7 +62,7 @@ echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Checking PHP process o
 if ! getent passwd "${NPP_USER}" >/dev/null 2>&1; then
     groupadd --gid "${NPP_GID}" "${NPP_USER}"  && \
     useradd --gid "${NPP_USER}" --no-create-home --home /nonexistent --comment "Isolated PHP Process owner" --shell /bin/bash --uid "${NPP_UID}" "${NPP_USER}"
-    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP:${COLOR_RESET} PHP process owner user ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} is created! Proceeding..."
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} PHP process owner user ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} is created! Proceeding..."
 else
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} PHP process owner user ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} is already exists! Skipping..."
 fi
@@ -76,7 +76,6 @@ else
 fi
 
 # Wait until the Nginx Cache Path exists
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Checking If Nginx Cache Path: ${COLOR_LIGHT_CYAN}${NPP_NGINX_CACHE_PATH}${COLOR_RESET} is ready..."
 while [[ ! -d "${NPP_NGINX_CACHE_PATH}" ]]; do
     echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Nginx Cache Path: ${COLOR_LIGHT_CYAN}${NPP_NGINX_CACHE_PATH}${COLOR_RESET} is not ready. Retrying..."
     sleep 2
