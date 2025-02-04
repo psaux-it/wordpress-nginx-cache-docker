@@ -35,8 +35,5 @@ COLOR_WHITE='\033[0;97m'
 COLOR_BLACK='\033[0;30m'
 COLOR_LIGHT_CYAN='\033[0;96m'
 
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-MYSQL:${COLOR_RESET} Applying ${COLOR_CYAN}kernel${COLOR_RESET} parameters..."
-sysctl --system >/dev/null 2>&1
-
 # Start mysqld
 exec /usr/local/bin/docker-entrypoint.sh "$@" >/dev/null 2>&1
