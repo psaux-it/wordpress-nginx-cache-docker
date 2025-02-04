@@ -20,6 +20,7 @@ services:
       - ${NPP_FPM_CONF}:/usr/local/etc/php-fpm.d/www.conf
       - ${FPM_DOCKER_CONF}:/usr/local/etc/php-fpm.d/zz-docker.conf
       - ${NPP_PHP_CONF}:/usr/local/etc/php/conf.d/npp.ini
+      - ${NPP_KERNEL_CONF}:/etc/sysctl.d/npp.conf
     environment:
       - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
       - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
@@ -67,11 +68,13 @@ services:
     restart: unless-stopped
     volumes:
       - ${MYSQL_HOME}:/var/lib/mysql
+      - ${NPP_KERNEL_CONF}:/etc/sysctl.d/npp.conf
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    privileged: true
     networks:
       npp_network:
         ipv4_address: 172.19.0.2
@@ -97,12 +100,14 @@ services:
       - ${NPP_NGINX_CONF}:/etc/nginx/conf.d/npp.conf
       - ${NPP_NGINX_PARAMS_CONF}:/etc/nginx/fastcgi_params
       - ${NGINX_SSL_CERTS}:/etc/ssl:ro
+      - ${NPP_KERNEL_CONF}:/etc/sysctl.d/npp.conf
     environment:
       - NPP_WEB_ROOT=${NPP_WEB_ROOT_}
       - NPP_USER=${NPP_USER_}
       - NPP_UID=${NPP_UID_}
       - NPP_GID=${NPP_GID_}
       - NGINX_WEB_USER=${NGINX_WEB_USER_}
+    privileged: true
     networks:
       npp_network:
         ipv4_address: 172.19.0.3

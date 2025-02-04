@@ -58,13 +58,11 @@ wait_for_service() {
 # Display pre-entrypoint start message
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} ${COLOR_CYAN}${COLOR_BOLD}[Pre-Entrypoint]:${COLOR_RESET} Preparing environment before starting the ${COLOR_LIGHT_CYAN}Nginx${COLOR_RESET} service..."
 
-# Wait for 'wordpress' service up with 'wp-cli'
+# Wait for 'php-fpm' to be up
 wait_for_service "wordpress" 9001
-wait_for_service "wordpress" 9999
 
-# Wait for 'wordpress' service 'post_start' hook trigger first
-#echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Waiting for ${COLOR_LIGHT_CYAN}WordPress${COLOR_RESET} service ${COLOR_LIGHT_CYAN}post_start${COLOR_RESET} hook to trigger..."
-#sleep 5
+# Wait for Wordpress core Initialization to complete
+wait_for_service "wordpress" 9999
 
 # Check if required environment variables are set
 for var in NPP_UID NPP_GID NPP_USER NPP_WEB_ROOT NGINX_WEB_USER; do
@@ -74,42 +72,26 @@ for var in NPP_UID NPP_GID NPP_USER NPP_WEB_ROOT NGINX_WEB_USER; do
     fi
 done
 
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Applying ${COLOR_CYAN}kernel${COLOR_RESET} parameters..."
+sysctl --system >/dev/null 2>&1
+
 # Create Isolated PHP process owner user and group on Nginx container
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Checking PHP process owner user and group with UID ${COLOR_CYAN}${NPP_UID}${COLOR_RESET} and GID ${COLOR_CYAN}${NPP_GID}${COLOR_RESET}"
 if ! getent passwd "${NPP_USER}" >/dev/null 2>&1; then
     groupadd --gid "${NPP_GID}" "${NPP_USER}"  && \
-    useradd --gid "${NPP_USER}" --no-create-home --home /nonexistent --comment "Isolated PHP Process owner" --shell /bin/false --uid "${NPP_UID}" "${NPP_USER}"
-    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} User ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} created! Proceeding..."
+    useradd --gid "${NPP_USER}" --no-create-home --home /nonexistent --comment "Isolated PHP Process owner" --shell /bin/bash --uid "${NPP_UID}" "${NPP_USER}"
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} User ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} created! Proceeding..."
 else
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} User ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} already exists! Proceeding..."
 fi
 
 # Add webserver-user to PHP process owner group
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Adding webserver-user ${COLOR_LIGHT_CYAN}${NGINX_WEB_USER}${COLOR_RESET} to PHP process owner group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} to give required read permissions."
 if ! id -nG "${NGINX_WEB_USER}" | grep -qw "${NPP_USER}"; then
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Adding webserver-user ${COLOR_LIGHT_CYAN}${NGINX_WEB_USER}${COLOR_RESET} to PHP process owner group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} to give required read permissions."
     usermod -aG "${NPP_USER}" "${NGINX_WEB_USER}"
 else
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} User ${COLOR_LIGHT_CYAN}${NGINX_WEB_USER}${COLOR_RESET} is already in group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} Skipping.."
 fi
 
-# Wait until the directory exists
-echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Waiting for directory ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} to exist..."
-while [[ ! -d "${NPP_WEB_ROOT}" ]]; do
-    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Directory ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} is not ready. Retrying..."
-    sleep 2
-done
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Directory ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} is ready! Proceeding..."
-
-# Own website with Isolated PHP process owner user 'npp'
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Setting ownership of ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} to user/group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} with UID ${COLOR_CYAN}${NPP_UID}${COLOR_RESET} and GID ${COLOR_CYAN}${NPP_GID}${COLOR_RESET}."
-chown -R "${NPP_UID}":"${NPP_GID}" "${NPP_WEB_ROOT}"
-
-# Set proper permission to restrict environment for 'others'
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Setting permissions for ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} to completely isolate the environment."
-chmod -R u=rwX,g=rX,o= "${NPP_WEB_ROOT}"
-
-# Wait for wordpress-db container up
-wait_for_service "db" 3306
-
-# Execute the original entrypoint
-exec /docker-entrypoint.sh "$@"
+# Start nginx
+exec /docker-entrypoint.sh "$@" >/dev/null 2>&1

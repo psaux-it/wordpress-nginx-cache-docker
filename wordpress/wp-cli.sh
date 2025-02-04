@@ -40,7 +40,7 @@ wait_for_service() {
     local host="$1"
     local port="$2"
     local retries=30
-    local wait_time=5
+    local wait_time=15
 
     while ! nc -z "${host}" "${port}"; do
         if [[ "${retries}" -le 0 ]]; then
@@ -56,11 +56,13 @@ wait_for_service() {
 }
 
 # Display pre-entrypoint start message
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}${COLOR_BOLD}[POST-START]:${COLOR_RESET} Initialization of ${COLOR_CYAN}WordPress${COLOR_RESET} has started.."
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}${COLOR_BOLD}[POST-START]:${COLOR_RESET} Initialization of ${COLOR_CYAN}Core WordPress${COLOR_RESET} has started.."
 
 # Check if required environment variables are set
 for var in \
     NPP_USER \
+    NPP_UID \
+    NPP_GID \
     WORDPRESS_DB_USER \
     WORDPRESS_DB_PASSWORD \
     WORDPRESS_DB_NAME \
@@ -80,27 +82,66 @@ done
 # We need to sure '/var/www/html' exists for 'wp-cli'
 wait_for_service "wordpress" 9001
 
-# WP-CLI --allow-root
-export WP_CLI_ALLOW_ROOT=1
+# Check ownership of webroot for consistency
+check_ownership() {
+    while IFS=" " read -r owner group file; do
+        if [[ "${owner}" != "${NPP_USER}" || "$group" != "${NPP_USER}" ]]; then
+            return 1
+        fi
+    done < <(find "${NPP_WEB_ROOT}" -printf "%u %g %p\n" 2>/dev/null)
+    return 0
+}
 
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Initiating WordPress installation and configuration..."
-# Install WordPress in the background after the container starts
-if ! wp core is-installed --allow-root >/dev/null 2>&1; then
-    if wp core install --url="${WORDPRESS_SITE_URL}" \
-                       --title="${WORDPRESS_SITE_TITLE}" \
-                       --admin_user="${WORDPRESS_ADMIN_USER}" \
-                       --admin_password="${WORDPRESS_ADMIN_PASSWORD}" \
-                       --admin_email="${WORDPRESS_ADMIN_EMAIL}" \
-                       --allow-root >/dev/null 2>&1; then
-        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} WordPress has been successfully installed."
-    else
-        echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} WordPress installation failed. Please check the logs for more details."
-    fi
+# Check permissions of webroot to ensure proper isolation for 'others'
+check_permissions() {
+    while IFS=" " read -r perms file; do
+        others_perm="${perms:8:1}${perms:9:1}${perms:10:1}"
+        if [[ "${others_perm}" != "---" ]]; then
+            return 1
+        fi
+    done < <(find "${NPP_WEB_ROOT}" -exec ls -ld {} + 2>/dev/null)
+    return 0
+}
+
+# Own website with Isolated PHP process owner user 'npp'
+if ! check_ownership; then
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Setting ownership of ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} to user/group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} with UID ${COLOR_CYAN}${NPP_UID}${COLOR_RESET} and GID ${COLOR_CYAN}${NPP_GID}${COLOR_RESET}."
+    chown -R "${NPP_UID}":"${NPP_GID}" "${NPP_WEB_ROOT}"
 else
-    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} WordPress is already installed. Skipping installation." >/tmp/wp_cli.log 2>&1
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Ownership of ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} is already properly set."
 fi
 
-# Trim spaces around commas and the entire string
+# Set proper permission to restrict environment for 'others'
+if ! check_permissions; then
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Setting permissions for ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} to completely isolate the environment."
+    chmod -R u=rwX,g=rX,o= "${NPP_WEB_ROOT}"
+else
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Permission for ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} is already properly set."
+fi
+
+# Install core WordPress
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Initiating Core WordPress installation and configuration..."
+
+# Set the WP_CLI_CACHE_DIR before calling su
+export WP_CLI_CACHE_DIR="${NPP_WEB_ROOT}/.wp-cli/cache"
+
+# Check if core WordPress is already installed
+if ! su -m -c "wp core is-installed" ${NPP_USER} >/dev/null 2>&1; then
+    # Install WordPress if not installed
+    if su -m -c "wp core install --url=\"${WORDPRESS_SITE_URL}\" \
+                                 --title=\"${WORDPRESS_SITE_TITLE}\" \
+                                 --admin_user=\"${WORDPRESS_ADMIN_USER}\" \
+                                 --admin_password=\"${WORDPRESS_ADMIN_PASSWORD}\" \
+                                 --admin_email=\"${WORDPRESS_ADMIN_EMAIL}\"" ${NPP_USER} >/dev/null 2>&1; then
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}WordPress core${COLOR_RESET} has been successfully installed."
+    else
+        echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}WordPress core${COLOR_RESET} installation failed. Please check the logs for more details."
+    fi
+else
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}WordPress core${COLOR_RESET} is already installed. Skipping..."
+fi
+
+# Normalize user input (Trim spaces around commas and the entire string)
 NPP_PLUGINS_CLEANED=$(echo "${NPP_PLUGINS}" | sed -E 's/[[:space:]]*,[[:space:]]*/,/g' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')
 NPP_THEMES_CLEANED=$(echo "${NPP_THEMES}" | sed -E 's/[[:space:]]*,[[:space:]]*/,/g' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')
 
@@ -111,37 +152,39 @@ IFS=',' read -r -a NPP_THEMES <<< "${NPP_THEMES_CLEANED}"
 # Install Plugins
 if [[ "${#NPP_PLUGINS[@]}" -gt 0 ]]; then
     for plugin in "${NPP_PLUGINS[@]}"; do
-        if ! wp plugin is-installed "${plugin}" --allow-root >/dev/null 2>&1; then
-            if wp plugin install "${plugin}" --activate --allow-root >/dev/null 2>&1; then
+        if ! su -m -c "wp plugin is-installed \"${plugin}\"" ${NPP_USER} >/dev/null 2>&1; then
+            if su -m -c "wp plugin install \"${plugin}\" --activate" ${NPP_USER} >/dev/null 2>&1; then
                 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Plugin ${COLOR_CYAN}${plugin}${COLOR_RESET} has been installed and activated."
             else
                 echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Plugin ${COLOR_CYAN}${plugin}${COLOR_RESET} installation failed. Please check the logs for more details."
             fi
         else
-            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Plugin ${COLOR_CYAN}${plugin}${COLOR_RESET} is already installed." >/tmp/wp_cli.log 2>&1
+            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Plugin ${COLOR_CYAN}${plugin}${COLOR_RESET} is already installed."
         fi
     done
 else
-    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} No plugins to install." > /tmp/wp_cli.log 2>&1
+    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}No plugins${COLOR_RESET} to install."
 fi
 
 # Install Themes
 if [[ "${#NPP_THEMES[@]}" -gt 0 ]]; then
     for theme in "${NPP_THEMES[@]}"; do
-        if ! wp theme is-installed "${theme}" --allow-root >/dev/null 2>&1; then
-            if wp theme install "${theme}" --activate --allow-root >/dev/null 2>&1; then
+        if ! su -m -c "wp theme is-installed \"${theme}\"" ${NPP_USER} >/dev/null 2>&1; then
+            if su -m -c "wp theme install \"${theme}\" --activate" ${NPP_USER} >/dev/null 2>&1; then
                 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Theme ${COLOR_CYAN}${theme}${COLOR_RESET} has been installed and activated."
             else
                 echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Theme ${COLOR_CYAN}${theme}${COLOR_RESET} installation failed. Please check the logs for more details."
             fi
         else
-            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Theme ${COLOR_CYAN}${theme}${COLOR_RESET} is already installed." >/tmp/wp_cli.log 2>&1
+            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Theme ${COLOR_CYAN}${theme}${COLOR_RESET} is already installed."
         fi
     done
 else
-    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} No themes to install." >/tmp/wp_cli.log 2>&1
+    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}No themes${COLOR_RESET} to install."
 fi
 
-# Start to listen dummy port
+# Listen on dummy port for 'nginx' container health check
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Starting to listen on dummy port ${COLOR_CYAN}9999${COLOR_RESET}..."
-nc -lk -p 9999 > /dev/null 2>&1 &
+if ! nc -zv 127.0.0.1 9999 2>/dev/null; then
+    nc -lk -p 9999 >/dev/null 2>&1 &
+fi
