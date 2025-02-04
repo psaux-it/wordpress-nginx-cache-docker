@@ -12,5 +12,5 @@ COPY nginx/entrypoint-nginx.sh /entrypoint-nginx.sh
 # Make sure the entrypoint script is executable
 RUN chmod +x /entrypoint-nginx.sh
 
-# Default command
+# CMD
 CMD ["/entrypoint-nginx.sh", "nginx", "-g", "daemon off;"]
