@@ -39,4 +39,4 @@ echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-MYSQL:${COLOR_RESET} Applying ${COLOR_CY
 sysctl --system >/dev/null 2>&1
 
 # Start mysqld
-exec /usr/local/bin/docker-entrypoint.sh "$@"
+exec /usr/local/bin/docker-entrypoint.sh "$@" >/dev/null 2>&1
