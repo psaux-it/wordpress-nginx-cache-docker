@@ -94,4 +94,4 @@ else
 fi
 
 # Start nginx
-exec /docker-entrypoint.sh "$@"
+exec /docker-entrypoint.sh "$@" >/dev/null 2>&1 
