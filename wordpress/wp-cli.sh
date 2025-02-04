@@ -40,7 +40,7 @@ wait_for_service() {
     local host="$1"
     local port="$2"
     local retries=30
-    local wait_time=5
+    local wait_time=15
 
     while ! nc -z "${host}" "${port}"; do
         if [[ "${retries}" -le 0 ]]; then
@@ -56,7 +56,7 @@ wait_for_service() {
 }
 
 # Display pre-entrypoint start message
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}${COLOR_BOLD}[POST-START]:${COLOR_RESET} Initialization of ${COLOR_CYAN}WordPress${COLOR_RESET} has started.."
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}${COLOR_BOLD}[POST-START]:${COLOR_RESET} Initialization of ${COLOR_CYAN}Core WordPress${COLOR_RESET} has started.."
 
 # Check if required environment variables are set
 for var in \
