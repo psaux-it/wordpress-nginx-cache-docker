@@ -13,4 +13,4 @@ COPY nginx/entrypoint-nginx.sh /entrypoint-nginx.sh
 RUN chmod +x /entrypoint-nginx.sh
 
 # Default command
-CMD ["/bin/bash", "/entrypoint-nginx.sh", "nginx", "-g", "daemon off;"]
+CMD ["/entrypoint-nginx.sh", "nginx", "-g", "daemon off;"]
