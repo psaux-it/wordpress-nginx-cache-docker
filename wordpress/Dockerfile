@@ -55,5 +55,5 @@ COPY wordpress/wp-cli.sh /scripts/wp-cli.sh
 RUN chmod +x /entrypoint-wp.sh
 RUN chmod +x /scripts/wp-cli.sh
 
-# Default command
+# CMD
 CMD ["/entrypoint-wp.sh", "php-fpm"]
