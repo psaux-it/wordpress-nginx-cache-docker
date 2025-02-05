@@ -13,14 +13,13 @@ services:
       - .env
     restart: unless-stopped
     volumes:
-      - ${WORDPRESS_HOME}:/var/www/html
-      - ${NGINX_CACHE}:/var/cache/nginx
+      - ${WORDPRESS_HOME}:${NPP_WEB_ROOT_}
+      - ${NGINX_CACHE}:${NPP_NGINX_CACHE_PATH_}
       - ${NGINX_CONF}:/etc/nginx/nginx.conf
       - ${NPP_NGINX_CONF}:/etc/nginx/conf.d/npp.conf
       - ${NPP_FPM_CONF}:/usr/local/etc/php-fpm.d/www.conf
       - ${FPM_DOCKER_CONF}:/usr/local/etc/php-fpm.d/zz-docker.conf
       - ${NPP_PHP_CONF}:/usr/local/etc/php/conf.d/npp.ini
-      - ${NPP_KERNEL_CONF}:/etc/sysctl.d/npp.conf
     environment:
       - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
       - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
@@ -38,9 +37,6 @@ services:
       - NPP_PLUGINS=${NPP_PLUGINS_}
       - NPP_THEMES=${NPP_THEMES_}
       - MOUNT_DIR=${MOUNT_DIR_}
-      - NGINX_WEB_USER=${NGINX_WEB_USER_}
-      - NGINX_WEB_UID=${NGINX_WEB_UID_}
-      - NGINX_WEB_GID=${NGINX_WEB_GID_}
       - WORDPRESS_SITE_URL=${WORDPRESS_SITE_URL_}
       - WORDPRESS_SITE_TITLE=${WORDPRESS_SITE_TITLE_}
       - WORDPRESS_ADMIN_USER=${WORDPRESS_ADMIN_USER_}
@@ -48,13 +44,19 @@ services:
       - WORDPRESS_ADMIN_EMAIL=${WORDPRESS_ADMIN_EMAIL_}
     depends_on:
       - db
-    privileged: true
+    security_opt:
+      - apparmor:unconfined
+      - seccomp:unconfined
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - /dev/fuse:/dev/fuse
     networks:
       npp_network:
         ipv4_address: 172.19.0.4
     post_start:
       - command: /scripts/wp-cli.sh
-        working_dir: /var/www/html
+        working_dir: ${NPP_WEB_ROOT_}
         user: root
 
   db:
@@ -68,13 +70,11 @@ services:
     restart: unless-stopped
     volumes:
       - ${MYSQL_HOME}:/var/lib/mysql
-      - ${NPP_KERNEL_CONF}:/etc/sysctl.d/npp.conf
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-    privileged: true
     networks:
       npp_network:
         ipv4_address: 172.19.0.2
@@ -94,20 +94,18 @@ services:
     depends_on:
       - wordpress
     volumes:
-      - ${WORDPRESS_HOME}:/var/www/html
-      - ${NGINX_CACHE}:/var/cache/nginx
+      - ${WORDPRESS_HOME}:${NPP_WEB_ROOT_}
+      - ${NGINX_CACHE}:${NPP_NGINX_CACHE_PATH_}
       - ${NGINX_CONF}:/etc/nginx/nginx.conf
       - ${NPP_NGINX_CONF}:/etc/nginx/conf.d/npp.conf
       - ${NPP_NGINX_PARAMS_CONF}:/etc/nginx/fastcgi_params
       - ${NGINX_SSL_CERTS}:/etc/ssl:ro
-      - ${NPP_KERNEL_CONF}:/etc/sysctl.d/npp.conf
     environment:
       - NPP_WEB_ROOT=${NPP_WEB_ROOT_}
       - NPP_USER=${NPP_USER_}
       - NPP_UID=${NPP_UID_}
       - NPP_GID=${NPP_GID_}
       - NGINX_WEB_USER=${NGINX_WEB_USER_}
-    privileged: true
     networks:
       npp_network:
         ipv4_address: 172.19.0.3

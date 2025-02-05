@@ -72,9 +72,6 @@ for var in NPP_UID NPP_GID NPP_USER NPP_WEB_ROOT NGINX_WEB_USER; do
     fi
 done
 
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Applying ${COLOR_CYAN}kernel${COLOR_RESET} parameters..."
-sysctl --system >/dev/null 2>&1
-
 # Create Isolated PHP process owner user and group on Nginx container
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Checking PHP process owner user and group with UID ${COLOR_CYAN}${NPP_UID}${COLOR_RESET} and GID ${COLOR_CYAN}${NPP_GID}${COLOR_RESET}"
 if ! getent passwd "${NPP_USER}" >/dev/null 2>&1; then
