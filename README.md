@@ -11,8 +11,8 @@ Explore the **[NPP Main GitHub Repository](https://github.com/psaux-it/nginx-fas
 - ✅ **FastCGI cache** setup ready with **Nginx** (1.27.3)
 - ✅ **WP-CLI** ready for plugin and theme installations
 - ✅ Includes all dependencies required for the **NPP plugin**
-- ✅ Isolated and secure PHP process owner for enhanced security and performance
-- ✅ Built with **bindfs** (1.17.7) for FUSE-based mounting of **Nginx Cache Path** to prevent permission issues
+- ✅ Isolated and secure **PHP process owner** for enhanced security and performance
+- ✅ Built with **bindfs** (1.17.7) for FUSE-based mounting of **Nginx Cache Path**
 - ✅ Supports a wide range of **PHP extensions**
 
 ## 🔑 Environment Variables
