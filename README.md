@@ -1,6 +1,6 @@
 # 🐳 NPP Dockerized  [![Docker Build](https://github.com/psaux-it/wordpress-nginx-cache-docker/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/psaux-it/wordpress-nginx-cache-docker/actions/workflows/docker-publish.yml)
 
-Welcome to the Docker project optimized for the **[(NPP) WordPress Plugin](https://wordpress.org/plugins/fastcgi-cache-purge-and-preload-nginx/)**! 🎉 This is a full-stack Dockerized environment designed for **optimized use of the NPP plugin**, including **WordPress**, **PHP-FPM**, **Nginx**, **FastCGI cache**, **WP-CLI**, and necessary PHP extensions. It’s tailored to run the **NPP plugin** efficiently, providing a complete solution for **Nginx Cache** management on wordpress.
+Welcome to the Docker project optimized for the **[(NPP) WordPress Plugin](https://wordpress.org/plugins/fastcgi-cache-purge-and-preload-nginx/)**! 🎉 This full-stack Dockerized environment is designed for **NPP** usage, including **WordPress**, **PHP-FPM**, **Nginx**, **MySQL**, **FastCGI cache**, **WP-CLI**, and necessary **PHP extensions**. It's tailored for easy deployment and efficient use of the **NPP plugin**, providing a comprehensive solution for **Nginx Cache** management on wordpress.
 
 Explore the **[NPP Main GitHub Repository](https://github.com/psaux-it/nginx-fastcgi-cache-purge-and-preload)** to access the heart of the plugin development.
 
@@ -8,18 +8,19 @@ Explore the **[NPP Main GitHub Repository](https://github.com/psaux-it/nginx-fas
 
 - ✅ **WordPress** (6.7.1) with **PHP-FPM** (8.2)
 - ✅ **MySQL** (8) for database management
-- ✅ **FastCGI cache** setup ready with **Nginx** (1.27.3)
-- ✅ **WP-CLI** ready for plugin and theme installations
+- ✅ **FastCGI** cache ready with **Nginx** (1.27.3)
+- ✅ **WP-CLI** ready for plugin and theme installations (safe without --allow-root)
 - ✅ Includes all dependencies required for the **NPP plugin**
 - ✅ Isolated and secure **PHP process owner** for enhanced security and performance
 - ✅ Built with **bindfs** (1.17.7) for FUSE-based mounting of **Nginx Cache Path**
 - ✅ Supports a wide range of **PHP extensions**
+- ✅ All containers powered by **Debian 12** for a stable, consistent environment"
 
 ## 🔑 Environment Variables
 
 Please check the **.env** file for the environment variables used by the project.
 
-Some variables can be directly modified by the user to customize the setup, while others are integral to the project's core configuration. Changing these core variables may require adjustments in other parts of the project to maintain proper integration and workflow.
+Some variables can be directly modified by the user to customize the setup, while others are integral to the project's core configuration. Changing these core variables may require some work to adjust other parts of the project to maintain proper integration and workflow. Enjoy customizing it to suit your needs! 😜
 
 ## ⚙️️ Setup Instructions
 
