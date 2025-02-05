@@ -7,7 +7,7 @@ Explore the **[NPP Main GitHub Repository](https://github.com/psaux-it/nginx-fas
 ## 🔧 Features
 
 - ✅ **WordPress** (6.7.1) with **PHP-FPM** (8.2)
-- ✅ **MySQL** (8) included for database management
+- ✅ **MySQL** (8) for database management
 - ✅ **FastCGI cache** setup ready with **Nginx** (1.27.3)
 - ✅ **WP-CLI** ready for plugin and theme installations
 - ✅ Includes all dependencies required for the **NPP plugin**
