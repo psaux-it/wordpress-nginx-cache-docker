@@ -105,6 +105,7 @@ services:
       - NPP_USER=${NPP_USER_}
       - NPP_UID=${NPP_UID_}
       - NPP_GID=${NPP_GID_}
+      - NGINX_WEB_USER=${NGINX_WEB_USER_}
     networks:
       npp_network:
         ipv4_address: 172.19.0.3
