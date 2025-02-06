@@ -1,0 +1,125 @@
+name: npp
+
+services:
+  wordpress:
+    build:
+      context: .
+      dockerfile: wordpress/Dockerfile
+    image: ghcr.io/psaux-it/wordpress-nginx-cache-docker/wordpress:latest
+    container_name: wordpress-fpm
+    expose:
+      - "9001"
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - ${WORDPRESS_HOME}:${NPP_WEB_ROOT_}
+      - ${NGINX_CACHE}:${NPP_NGINX_CACHE_PATH_}
+      - ${NGINX_CONF}:/etc/nginx/nginx.conf
+      - ${NPP_NGINX_CONF}:/etc/nginx/conf.d/npp.conf
+      - ${NPP_FPM_CONF}:/usr/local/etc/php-fpm.d/www.conf
+      - ${FPM_DOCKER_CONF}:/usr/local/etc/php-fpm.d/zz-docker.conf
+      - ${NPP_PHP_CONF}:/usr/local/etc/php/conf.d/npp.ini
+    environment:
+      - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
+      - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
+      - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}
+      - WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME}
+      - WORDPRESS_CONFIG_EXTRA=
+          define('FORCE_SSL_ADMIN', true);
+          define('FORCE_SSL_LOGIN', true);
+          if (defined('WP_CLI') && WP_CLI && !isset($$_SERVER['HTTP_HOST'])) { $$_SERVER['HTTP_HOST'] = "localhost"; }
+      - NPP_WEB_ROOT=${NPP_WEB_ROOT_}
+      - NPP_NGINX_CACHE_PATH=${NPP_NGINX_CACHE_PATH_}
+      - NPP_USER=${NPP_USER_}
+      - NPP_UID=${NPP_UID_}
+      - NPP_GID=${NPP_GID_}
+      - NPP_PLUGINS=${NPP_PLUGINS_}
+      - NPP_THEMES=${NPP_THEMES_}
+      - MOUNT_DIR=${MOUNT_DIR_}
+      - WORDPRESS_SITE_URL=${WORDPRESS_SITE_URL_}
+      - WORDPRESS_SITE_TITLE=${WORDPRESS_SITE_TITLE_}
+      - WORDPRESS_ADMIN_USER=${WORDPRESS_ADMIN_USER_}
+      - WORDPRESS_ADMIN_PASSWORD=${WORDPRESS_ADMIN_PASSWORD_}
+      - WORDPRESS_ADMIN_EMAIL=${WORDPRESS_ADMIN_EMAIL_}
+    depends_on:
+      - db
+    security_opt:
+      - apparmor:unconfined
+      - seccomp:unconfined
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - /dev/fuse:/dev/fuse
+    networks:
+      npp_network:
+        ipv4_address: 172.19.0.4
+    post_start:
+      - command: /scripts/wp-cli.sh
+        working_dir: ${NPP_WEB_ROOT_}
+        user: root
+
+  db:
+    build:
+      context: .
+      dockerfile: mysql/Dockerfile
+    image: ghcr.io/psaux-it/wordpress-nginx-cache-docker/mysql:latest
+    container_name: wordpress-db
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - ${MYSQL_HOME}:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      npp_network:
+        ipv4_address: 172.19.0.2
+
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    image: ghcr.io/psaux-it/wordpress-nginx-cache-docker/nginx:latest
+    container_name: nginx
+    env_file:
+      - .env
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - wordpress
+    volumes:
+      - ${WORDPRESS_HOME}:${NPP_WEB_ROOT_}
+      - ${NGINX_CACHE}:${NPP_NGINX_CACHE_PATH_}
+      - ${NGINX_CONF}:/etc/nginx/nginx.conf
+      - ${NPP_NGINX_CONF}:/etc/nginx/conf.d/npp.conf
+      - ${NPP_NGINX_PARAMS_CONF}:/etc/nginx/fastcgi_params
+      - ${NGINX_SSL_CERTS}:/etc/ssl:ro
+    environment:
+      - NPP_WEB_ROOT=${NPP_WEB_ROOT_}
+      - NPP_USER=${NPP_USER_}
+      - NPP_UID=${NPP_UID_}
+      - NPP_GID=${NPP_GID_}
+      - NGINX_WEB_USER=${NGINX_WEB_USER_}
+    networks:
+      npp_network:
+        ipv4_address: 172.19.0.3
+
+volumes:
+  wordpress-db:
+  wordpress:
+  nginx_cache:
+
+networks:
+  npp_network:
+    name: npp-wp
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "172.19.0.0/16"
+          gateway: "172.19.0.1"
