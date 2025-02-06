@@ -48,7 +48,7 @@ wait_for_service() {
             exit 1
         fi
         echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Waiting for ${COLOR_CYAN}${host}:${port}${COLOR_RESET} to become available..."
-        sleep "$wait_time"
+        sleep "${wait_time}"
         retries=$((retries - 1))
     done
 
@@ -89,6 +89,8 @@ if ! id -nG "${NGINX_WEB_USER}" | grep -qw "${NPP_USER}"; then
 else
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} User ${COLOR_LIGHT_CYAN}${NGINX_WEB_USER}${COLOR_RESET} is already in group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} Skipping.."
 fi
+
+sleep 3
 
 # Congratulatory Header
 echo -e "\n${COLOR_YELLOW}${COLOR_BOLD}🎉 CONGRATULATIONS! 🎉${COLOR_RESET}"
