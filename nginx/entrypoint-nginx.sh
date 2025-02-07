@@ -65,7 +65,7 @@ wait_for_service "wordpress" 9001
 wait_for_service "wordpress" 9999
 
 # Check if required environment variables are set
-for var in NPP_UID NPP_GID NPP_USER NPP_WEB_ROOT NGINX_WEB_USER; do
+for var in NPP_UID NPP_GID NPP_USER NPP_WEB_ROOT NGINX_WEB_USER MOUNT_DIR; do
     if [[ -z "${!var:-}" ]]; then
         echo -e "${COLOR_RED}${COLOR_BOLD}NPP-NGINX-FATAL:${COLOR_RESET} Missing required environment variable: ${COLOR_LIGHT_CYAN}${var}${COLOR_RESET} - ${COLOR_RED}Exiting...${COLOR_RESET}"
         exit 1
@@ -113,15 +113,15 @@ echo -e "\n${COLOR_YELLOW}━━━━━━━━━━━━━━━━━━
 
 # Default credentials
 echo -e "\n${COLOR_GREEN}${COLOR_BOLD}📝 Default Credentials:${COLOR_RESET}"
-echo -e "${COLOR_LIGHT_CYAN}Username: ${COLOR_RESET}${COLOR_BOLD}npp${COLOR_RESET}"
-echo -e "${COLOR_LIGHT_CYAN}Password: ${COLOR_RESET}${COLOR_BOLD}npp${COLOR_RESET}"
+echo -e "${COLOR_LIGHT_CYAN}Username: ${COLOR_RESET}${COLOR_BOLD}${NPP_USER}${COLOR_RESET}"
+echo -e "${COLOR_LIGHT_CYAN}Password: ${COLOR_RESET}${COLOR_BOLD}${NPP_USER}${COLOR_RESET}"
 
 # Separator for cache path
 echo -e "\n${COLOR_YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${COLOR_RESET}"
 
 # Default Nginx cache path
 echo -e "\n${COLOR_GREEN}${COLOR_BOLD}📝 Nginx Cache Path:${COLOR_RESET}"
-echo -e "${COLOR_LIGHT_CYAN}Path: ${COLOR_RESET}${COLOR_BOLD}/var/cache/nginx-npp${COLOR_RESET}"
+echo -e "${COLOR_LIGHT_CYAN}Path: ${COLOR_RESET}${COLOR_BOLD}${MOUNT_DIR}${COLOR_RESET}"
 
 # Final separator
 echo -e "\n${COLOR_YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${COLOR_RESET}"
