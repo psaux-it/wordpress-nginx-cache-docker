@@ -1,0 +1,12 @@
+[mysqld]
+character-set-server = utf8mb4           # UTF-8 character set
+skip-external-locking                    # Skip external locking for speed
+skip-log-bin                             # Disable binary logging
+wait_timeout = 1800                      # Timeout for inactive connections (30 min)
+max_allowed_packet = 128M                # Max packet size for queries
+innodb_flush_log_at_trx_commit = 2       # InnoDB log flush for performance
+innodb_dedicated_server = ON             # Enable InnoDB optimizations
+innodb_log_buffer_size = 32M             # InnoDB log buffer size
+max_connections = 100                    # Max allowed connections
+tmp_table_size = 32M                     # Max temp table size in memory
+max_heap_table_size = 32M                # Max in-memory heap table size

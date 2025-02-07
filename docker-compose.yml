@@ -20,6 +20,8 @@ services:
       - ${NPP_FPM_CONF}:/usr/local/etc/php-fpm.d/www.conf
       - ${FPM_DOCKER_CONF}:/usr/local/etc/php-fpm.d/zz-docker.conf
       - ${NPP_PHP_CONF}:/usr/local/etc/php/conf.d/npp.ini
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     environment:
       - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
       - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
@@ -68,8 +70,16 @@ services:
     env_file:
       - .env
     restart: unless-stopped
+    cap_add:
+      - SYS_NICE
+    security_opt:
+      - apparmor:unconfined
+      - seccomp:unconfined
     volumes:
       - ${MYSQL_HOME}:/var/lib/mysql
+      - ${NPP_MYSQL_CONF}:/etc/mysql/conf.d/50-npp-server.cnf
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
@@ -100,6 +110,8 @@ services:
       - ${NPP_NGINX_CONF}:/etc/nginx/conf.d/npp.conf
       - ${NPP_NGINX_PARAMS_CONF}:/etc/nginx/fastcgi_params
       - ${NGINX_SSL_CERTS}:/etc/ssl:ro
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     environment:
       - NPP_WEB_ROOT=${NPP_WEB_ROOT_}
       - NPP_USER=${NPP_USER_}

@@ -84,6 +84,14 @@ fi
 # Log that the bindfs mount was successful
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} The Nginx Cache Path: ${COLOR_LIGHT_CYAN}${NPP_NGINX_CACHE_PATH}${COLOR_RESET} has been successfully mounted to ${COLOR_LIGHT_CYAN}${MOUNT_DIR}${COLOR_RESET} with ${COLOR_CYAN}UID:${NPP_UID}${COLOR_RESET} and ${COLOR_CYAN}GID:${NPP_GID}${COLOR_RESET}."
 
+# Fix permissions for consistency
+chown -R root:root \
+    /etc/nginx \
+    /usr/local/etc/php-fpm.d \
+    /usr/local/etc/php/conf.d &&
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Permissions fixed successfully!" ||
+echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Failed to fix permissions!"
+
 # Wait for the 'wordpress-db' to be ready
 until mysql -h wordpress-db -u"${WORDPRESS_DB_USER}" -p"${WORDPRESS_DB_PASSWORD}" "${WORDPRESS_DB_NAME}" -e "SELECT 1" > /dev/null 2>&1; do
     echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP:${COLOR_RESET} The ${COLOR_LIGHT_CYAN}MySQL database${COLOR_RESET} is not available yet. Retrying..."
@@ -92,4 +100,4 @@ done
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} The ${COLOR_LIGHT_CYAN}MySQL database${COLOR_RESET} is ready! Proceeding..."
 
 # Start php-fpm
-exec /usr/local/bin/docker-entrypoint.sh "$@" >/dev/null 2>&1
+exec /usr/local/bin/docker-entrypoint.sh "$@"

@@ -90,6 +90,11 @@ else
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} User ${COLOR_LIGHT_CYAN}${NGINX_WEB_USER}${COLOR_RESET} is already in group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} Skipping.."
 fi
 
+# Fix permissions for consistency
+chown -R root:root /etc/nginx &&
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Permissions fixed successfully!" ||
+echo -e "${COLOR_RED}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Failed to fix permissions!"
+
 sleep 3
 
 # Congratulatory Header
@@ -118,4 +123,4 @@ echo -e "\n${COLOR_YELLOW}━━━━━━━━━━━━━━━━━━
 echo -e "\n${COLOR_RED}${COLOR_BOLD}☪︎${COLOR_RESET} ${COLOR_GREEN}${COLOR_BOLD}NE MUTLU TÜRK'ÜM DİYENE!${COLOR_RESET}"
 
 # Start nginx
-exec /docker-entrypoint.sh "$@" >/dev/null 2>&1
+exec /docker-entrypoint.sh "$@"
