@@ -36,4 +36,4 @@ COLOR_BLACK='\033[0;30m'
 COLOR_LIGHT_CYAN='\033[0;96m'
 
 # Start mysqld
-exec /usr/local/bin/docker-entrypoint.sh "$@" >/dev/null 2>&1
+exec /usr/local/bin/docker-entrypoint.sh "$@"
