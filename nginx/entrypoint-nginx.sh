@@ -106,7 +106,7 @@ echo -e "\n${COLOR_YELLOW}━━━━━━━━━━━━━━━━━━
 
 # URL Access Information
 echo -e "\n${COLOR_GREEN}${COLOR_BOLD}🔑 Access your WordPress admin page at:${COLOR_RESET}"
-echo -e "${COLOR_LIGHT_CYAN}https://localhost/wp-admin${COLOR_RESET}"
+echo -e "${COLOR_LIGHT_CYAN}https://172.19.0.3/wp-admin${COLOR_RESET}"
 
 # Separator for credentials
 echo -e "\n${COLOR_YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${COLOR_RESET}"
@@ -115,6 +115,13 @@ echo -e "\n${COLOR_YELLOW}━━━━━━━━━━━━━━━━━━
 echo -e "\n${COLOR_GREEN}${COLOR_BOLD}📝 Default Credentials:${COLOR_RESET}"
 echo -e "${COLOR_LIGHT_CYAN}Username: ${COLOR_RESET}${COLOR_BOLD}npp${COLOR_RESET}"
 echo -e "${COLOR_LIGHT_CYAN}Password: ${COLOR_RESET}${COLOR_BOLD}npp${COLOR_RESET}"
+
+# Separator for cache path
+echo -e "\n${COLOR_YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${COLOR_RESET}"
+
+# Default Nginx cache path
+echo -e "\n${COLOR_GREEN}${COLOR_BOLD}📝 Nginx Cache Path:${COLOR_RESET}"
+echo -e "${COLOR_LIGHT_CYAN}Path: ${COLOR_RESET}${COLOR_BOLD}/var/cache/nginx-npp${COLOR_RESET}"
 
 # Final separator
 echo -e "\n${COLOR_YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${COLOR_RESET}"
