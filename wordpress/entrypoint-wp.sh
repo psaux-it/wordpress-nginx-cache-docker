@@ -85,10 +85,11 @@ fi
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} The Nginx Cache Path: ${COLOR_LIGHT_CYAN}${NPP_NGINX_CACHE_PATH}${COLOR_RESET} has been successfully mounted to ${COLOR_LIGHT_CYAN}${MOUNT_DIR}${COLOR_RESET} with ${COLOR_CYAN}UID:${NPP_UID}${COLOR_RESET} and ${COLOR_CYAN}GID:${NPP_GID}${COLOR_RESET}."
 
 # Fix permissions for consistency
-chown -R "${NPP_USER}":"${NPP_USER}" /etc/nginx &&
-chown -R root:root /usr/local/etc/php-fpm.d &&
-chown -R root:root /usr/local/etc/php/conf.d &&
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Permissions fixed successfully!" ||
+chown -R root:root \
+    /etc/nginx \
+    /usr/local/etc/php-fpm.d \
+    /usr/local/etc/php/conf.d && 
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Permissions fixed successfully!" || 
 echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Failed to fix permissions!"
 
 # Wait for the 'wordpress-db' to be ready
