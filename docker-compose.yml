@@ -30,7 +30,7 @@ services:
       - WORDPRESS_CONFIG_EXTRA=
           define('FORCE_SSL_ADMIN', true);
           define('FORCE_SSL_LOGIN', true);
-          if (defined('WP_CLI') && WP_CLI && !isset($$_SERVER['HTTP_HOST'])) { $$_SERVER['HTTP_HOST'] = "localhost"; }
+          if (defined('WP_CLI') && WP_CLI && !isset($$_SERVER['HTTP_HOST'])) $$_SERVER['HTTP_HOST'] = "172.19.0.3";
       - NPP_WEB_ROOT=${NPP_WEB_ROOT_}
       - NPP_NGINX_CACHE_PATH=${NPP_NGINX_CACHE_PATH_}
       - NPP_USER=${NPP_USER_}
@@ -38,6 +38,12 @@ services:
       - NPP_GID=${NPP_GID_}
       - NPP_PLUGINS=${NPP_PLUGINS_}
       - NPP_THEMES=${NPP_THEMES_}
+      - NPP_DEV_ENABLED=${NPP_DEV_ENABLED_}
+      - NPP_DEV_PLUGIN_NAME=${NPP_DEV_PLUGIN_NAME_}
+      - NPP_DEV_PLUGIN_DIR=${NPP_DEV_PLUGIN_DIR_}
+      - NPP_DEV_TMP_CLONE_DIR=${NPP_DEV_TMP_CLONE_DIR_}
+      - NPP_DEV_PLUGIN_FILE=${NPP_DEV_PLUGIN_FILE_}
+      - NPP_DEV_GITHUB_REPO=${NPP_DEV_GITHUB_REPO_}
       - MOUNT_DIR=${MOUNT_DIR_}
       - WORDPRESS_SITE_URL=${WORDPRESS_SITE_URL_}
       - WORDPRESS_SITE_TITLE=${WORDPRESS_SITE_TITLE_}
@@ -118,6 +124,7 @@ services:
       - NPP_UID=${NPP_UID_}
       - NPP_GID=${NPP_GID_}
       - NGINX_WEB_USER=${NGINX_WEB_USER_}
+      - MOUNT_DIR=${MOUNT_DIR_}
     networks:
       npp_network:
         ipv4_address: 172.19.0.3

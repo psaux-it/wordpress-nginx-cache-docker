@@ -53,8 +53,8 @@ docker compose up -d --build
 
 ### 🚀 **Post-Container Startup Access**
 - The WordPress site can be accessed at the host machine:
-  - 🔒 [https://localhost](https://localhost)
-  - 🌐 [http://localhost](http://localhost)
+  - 🔒 [https://172.19.0.3](https://172.19.0.3)
+  - 🌐 [http://172.19.0.3](http://172.19.0.3)
 
 - Default WordPress **wp-admin** login credentials:
   - **Username**: `npp`

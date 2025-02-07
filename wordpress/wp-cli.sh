@@ -63,6 +63,12 @@ for var in \
     NPP_USER \
     NPP_UID \
     NPP_GID \
+    NPP_DEV_ENABLED \
+    NPP_DEV_PLUGIN_NAME \
+    NPP_DEV_PLUGIN_DIR \
+    NPP_DEV_TMP_CLONE_DIR \
+    NPP_DEV_PLUGIN_FILE \
+    NPP_DEV_GITHUB_REPO \
     WORDPRESS_DB_USER \
     WORDPRESS_DB_PASSWORD \
     WORDPRESS_DB_NAME \
@@ -181,6 +187,121 @@ if [[ "${#NPP_THEMES[@]}" -gt 0 ]]; then
     done
 else
     echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}No themes${COLOR_RESET} to install."
+fi
+
+# Check development deploy wanted
+if [[ "${NPP_DEV_ENABLED}" -eq 1 ]]; then
+    # Set variables
+    PLUGIN_NAME="${NPP_DEV_PLUGIN_NAME}"
+    PLUGIN_DIR="${NPP_DEV_PLUGIN_DIR}"
+    TMP_CLONE_DIR="${NPP_DEV_TMP_CLONE_DIR}"
+    PLUGIN_FILE="${NPP_DEV_PLUGIN_FILE}"
+    GITHUB_REPO="${NPP_DEV_GITHUB_REPO}"
+
+    # -----------------------------------------------------------------------------
+    # 1. Fetch latest development branch details from GitHub
+    # -----------------------------------------------------------------------------
+    TARGET_BRANCH=$(git ls-remote --heads "${GITHUB_REPO}" \
+        | awk '{print $2}' \
+        | sed 's#refs/heads/##' \
+        | grep '^v[0-9]' \
+        | sort -V \
+        | tail -n1 \
+        | awk '{$1=$1;print}')
+
+    LATEST_VERSION="${TARGET_BRANCH#v}"
+    REMOTE_COMMIT_HASH=$(git ls-remote --heads "${GITHUB_REPO}" "refs/heads/${TARGET_BRANCH}" \
+      | awk '{print substr($1,1,7)}' | awk '{$1=$1;print}')
+
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Latest branch: ${COLOR_CYAN}${TARGET_BRANCH}${COLOR_RESET}"
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Latest dev version: ${COLOR_CYAN}${LATEST_VERSION}${COLOR_RESET}"
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Remote commit: ${COLOR_CYAN}${REMOTE_COMMIT_HASH}${COLOR_RESET}"
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} ${COLOR_LIGHT_CYAN}######################${COLOR_RESET}"
+
+    # -----------------------------------------------------------------------------
+    # 2. Retrieve the installed plugin version and commit hash
+    # -----------------------------------------------------------------------------
+    CURRENT_VERSION="0.0.0"
+    INSTALLED_COMMIT_HASH=""
+
+    if [[ -f "${PLUGIN_FILE}" ]]; then
+        CURRENT_VERSION=$(grep -i "Version:" "${PLUGIN_FILE}" | head -n1 | awk '{print $NF}' | awk '{$1=$1;print}')
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Local version: ${COLOR_CYAN}${CURRENT_VERSION}${COLOR_RESET}"
+        if grep -qi "Latest Commit:" "${PLUGIN_FILE}"; then
+            INSTALLED_COMMIT_HASH=$(grep -i "Latest Commit:" "${PLUGIN_FILE}" | head -n1 | awk '{print $NF}' | awk '{$1=$1;print}')
+            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Local commit: ${COLOR_CYAN}${INSTALLED_COMMIT_HASH}${COLOR_RESET}"
+        else
+            echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} ${COLOR_CYAN}No commit history${COLOR_RESET} in plugin header."
+        fi
+    else
+        echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Plugin not installed; proceeding with fresh deployment."
+    fi
+
+    # -----------------------------------------------------------------------------
+    # 3. Determine if an update is required
+    # -----------------------------------------------------------------------------
+    need_update=0
+
+    if [[ -f "${PLUGIN_FILE}" ]]; then
+        # Check for version mismatch (installed version is older than latest)
+        if [[ "${CURRENT_VERSION}" != "${LATEST_VERSION}" && \
+              "$(echo -e "${CURRENT_VERSION}\n${LATEST_VERSION}" | sort -V | head -n1)" != "${LATEST_VERSION}" ]]; then
+            echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Version discrepancy found..."
+            need_update=1
+        fi
+
+        # Check for commit hash mismatch
+        if [[ "${INSTALLED_COMMIT_HASH}" != "${REMOTE_COMMIT_HASH}" ]]; then
+            echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Commit hash discrepancy found..."
+            need_update=1
+        fi
+    else
+        need_update=1
+    fi
+
+    # -----------------------------------------------------------------------------
+    # 4. Deploy/update the plugin if required
+    # -----------------------------------------------------------------------------
+    if [[ "${need_update}" -eq 1 ]]; then
+        echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Deploying development build ${COLOR_CYAN}${LATEST_VERSION}${COLOR_RESET}..."
+
+        # Remove the current plugin directory (if it exists)
+        rm -rf "${PLUGIN_DIR:?}"
+
+        # Clone the target branch into a temporary directory
+        mkdir -p "${TMP_CLONE_DIR:?}" && cd "${TMP_CLONE_DIR:?}"
+        git clone --branch "${TARGET_BRANCH:?}" "${GITHUB_REPO:?}" . >/dev/null 2>&1
+
+        # Fix line-ending issues
+        find "${TMP_CLONE_DIR:?}" -type f -exec dos2unix {} + >/dev/null 2>&1
+
+        # Retrieve the commit hash from the clone
+        CLONED_COMMIT_HASH=$(git rev-parse --short HEAD)
+
+        # Move the cloned files to the plugin directory and clean up
+        mv "${TMP_CLONE_DIR:?}" "${PLUGIN_DIR:?}"
+        rm -rf "${TMP_CLONE_DIR:?}" >/dev/null 2>&1
+        rm -rf "${PLUGIN_DIR:?}/.git" >/dev/null 2>&1
+        rm -f "${PLUGIN_DIR:?}/README.md" "${PLUGIN_DIR:?}/version" >/dev/null 2>&1
+
+        # Update the plugin header: Version and Latest Commit
+        if [[ -f "${PLUGIN_FILE}" ]]; then
+            sed -i "s/^\(\s*\*\s*Version:\s*\).*$/\1${LATEST_VERSION}/" "${PLUGIN_FILE}"
+            if grep -qi "Latest Commit:" "${PLUGIN_FILE}"; then
+                sed -i "s/^\(\s*\*\s*Latest Commit:\s*\).*$/\1${CLONED_COMMIT_HASH}/" "${PLUGIN_FILE}"
+                echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Updated plugin header commit hash to ${COLOR_CYAN}${CLONED_COMMIT_HASH}${COLOR_RESET}"
+            else
+                sed -i "/Version:/a \ * Latest Commit:     ${CLONED_COMMIT_HASH}" "${PLUGIN_FILE}"
+                echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Added commit hash ${COLOR_CYAN}${CLONED_COMMIT_HASH}${COLOR_RESET} to plugin header."
+            fi
+        fi
+
+        # Adjust ownership (ensure NPP_USER is set in the environment)
+        chown -R "${NPP_USER}":"${NPP_USER}" "${PLUGIN_DIR}"
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Deployed build ${COLOR_CYAN}${TARGET_BRANCH}${COLOR_RESET} with (commit ${COLOR_CYAN}${CLONED_COMMIT_HASH}${COLOR_RESET})."
+    else
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Plugin is up-to-date with commit ${COLOR_CYAN}${REMOTE_COMMIT_HASH}${COLOR_RESET}."
+    fi
 fi
 
 # Listen on dummy port for 'nginx' container health check
