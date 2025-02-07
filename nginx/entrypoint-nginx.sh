@@ -118,4 +118,4 @@ echo -e "\n${COLOR_YELLOW}━━━━━━━━━━━━━━━━━━
 echo -e "\n${COLOR_RED}${COLOR_BOLD}☪︎${COLOR_RESET} ${COLOR_GREEN}${COLOR_BOLD}NE MUTLU TÜRK'ÜM DİYENE!${COLOR_RESET}"
 
 # Start nginx
-exec /docker-entrypoint.sh "$@" >/dev/null 2>&1
+exec /docker-entrypoint.sh "$@"
