@@ -92,4 +92,4 @@ done
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} The ${COLOR_LIGHT_CYAN}MySQL database${COLOR_RESET} is ready! Proceeding..."
 
 # Start php-fpm
-exec /usr/local/bin/docker-entrypoint.sh "$@" >/dev/null 2>&1
+exec /usr/local/bin/docker-entrypoint.sh "$@"
