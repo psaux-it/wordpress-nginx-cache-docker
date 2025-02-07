@@ -49,6 +49,8 @@ RUN apt-get update && apt-get install -y \
     netcat-traditional \
     # Install common dependencies
     curl \
+    git \
+    dos2unix \
     # Install build time dependencies for 'bindfs' 
     build-essential \
     automake \
