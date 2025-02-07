@@ -88,8 +88,8 @@ echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} The Nginx Cache Path: 
 chown -R root:root \
     /etc/nginx \
     /usr/local/etc/php-fpm.d \
-    /usr/local/etc/php/conf.d && 
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Permissions fixed successfully!" || 
+    /usr/local/etc/php/conf.d &&
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Permissions fixed successfully!" ||
 echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Failed to fix permissions!"
 
 # Wait for the 'wordpress-db' to be ready
