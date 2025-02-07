@@ -30,7 +30,7 @@ services:
       - WORDPRESS_CONFIG_EXTRA=
           define('FORCE_SSL_ADMIN', true);
           define('FORCE_SSL_LOGIN', true);
-          if (defined('WP_CLI') && WP_CLI && !isset($$_SERVER['HTTP_HOST'])) $$_SERVER['HTTP_HOST'] = "172.19.0.3";
+          if (defined('WP_CLI') && WP_CLI && !isset($$_SERVER['HTTP_HOST'])) $$_SERVER['HTTP_HOST'] = "${NPP_NGINX_IP}";
       - NPP_WEB_ROOT=${NPP_WEB_ROOT_}
       - NPP_NGINX_CACHE_PATH=${NPP_NGINX_CACHE_PATH_}
       - NPP_USER=${NPP_USER_}
@@ -124,6 +124,7 @@ services:
       - NPP_UID=${NPP_UID_}
       - NPP_GID=${NPP_GID_}
       - NGINX_WEB_USER=${NGINX_WEB_USER_}
+      - NPP_NGINX_IP=${NPP_NGINX_IP}
       - MOUNT_DIR=${MOUNT_DIR_}
     networks:
       npp_network:
