@@ -30,7 +30,7 @@ services:
       - WORDPRESS_CONFIG_EXTRA=
           define('FORCE_SSL_ADMIN', true);
           define('FORCE_SSL_LOGIN', true);
-          if (defined('WP_CLI') && WP_CLI && !isset($$_SERVER['HTTP_HOST'])) { $$_SERVER['HTTP_HOST'] = "localhost"; }
+          if (defined('WP_CLI') && WP_CLI && !isset($$_SERVER['HTTP_HOST'])) $$_SERVER['HTTP_HOST'] = "172.19.0.3";
       - NPP_WEB_ROOT=${NPP_WEB_ROOT_}
       - NPP_NGINX_CACHE_PATH=${NPP_NGINX_CACHE_PATH_}
       - NPP_USER=${NPP_USER_}
