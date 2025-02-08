@@ -14,15 +14,24 @@ Explore the **[NPP Main GitHub Repository](https://github.com/psaux-it/nginx-fas
 - ✅ Isolated and secure **PHP process owner** for enhanced security and performance
 - ✅ Built with **bindfs** (1.17.7) + **fuse3** (1.16.2) for FUSE-based mounting of **Nginx Cache Path**
 - ✅ Supports a wide range of **PHP extensions**
+- ✅ Easily switch between the **stable** release and the **bleeding-edge dev** version of the **NPP**
 - ✅ All containers powered by **Debian 12** for a stable, consistent environment
 
 ## 🔑 Environment Variables
 
 Please check the **.env** file for the environment variables used by the project.
 
-Some variables can be directly modified by the user to customize the setup, while others are integral to the project's core configuration. Changing these core variables may require some work to adjust other parts of the project to maintain proper integration and workflow.
+Some variables can be directly modified by the user to customize the setup, while others are integral to the project's core configuration. Modifying these core variables for a production environment may require adjustments in other parts of the project to ensure proper integration and workflow. Feel free to customize it to meet your full-stack WordPress **production** needs!
 
-Enjoy customizing it to suit your needs!
+#### Use the Bleeding-Edge Version of NPP or Contribute to Development  
+
+If you want to use the **latest bleeding-edge version** of the NPP plugin or set up a **development environment** to contribute, simply set the following environment variable:  
+
+```bash
+NPP_DEV_ENABLED=1
+```
+
+🔄 This will sync the plugin with the latest development branch commit from GitHub, ensuring you always have access to the newest features and improvements.
 
 ## ⚙️️ Setup Instructions
 
