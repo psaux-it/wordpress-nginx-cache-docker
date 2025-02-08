@@ -165,7 +165,7 @@ if [[ "${#NPP_PLUGINS[@]}" -gt 0 ]]; then
                 echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Plugin ${COLOR_CYAN}${plugin}${COLOR_RESET} installation failed. Please check the logs for more details."
             fi
         else
-            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Plugin ${COLOR_CYAN}${plugin}${COLOR_RESET} is already installed."
+            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Plugin ${COLOR_CYAN}${plugin}${COLOR_RESET} is already installed. Skipping..."
         fi
     done
 else
@@ -182,11 +182,24 @@ if [[ "${#NPP_THEMES[@]}" -gt 0 ]]; then
                 echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Theme ${COLOR_CYAN}${theme}${COLOR_RESET} installation failed. Please check the logs for more details."
             fi
         else
-            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Theme ${COLOR_CYAN}${theme}${COLOR_RESET} is already installed."
+            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Theme ${COLOR_CYAN}${theme}${COLOR_RESET} is already installed. Skipping..."
         fi
     done
 else
     echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}No themes${COLOR_RESET} to install."
+fi
+
+# Check if the current permalink structure is already set
+CURRENT_PERMALINK=$(su -m -c "wp option get permalink_structure" "${NPP_USER}")
+if [[ -z "$CURRENT_PERMALINK" || "$CURRENT_PERMALINK" == "/index.php/%pagename%/" ]]; then
+    # Apply the new permalink structure
+    if su -m -c "wp rewrite structure '/%postname%/' --hard" "${NPP_USER}" >/dev/null 2>&1; then
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}Permalink structure${COLOR_RESET} has been successfully updated."
+    else
+        echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}Failed to update${COLOR_RESET} permalink structure. Please check logs for more details."
+    fi
+else
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}Permalink structure${COLOR_RESET} is already properly set. Skipping..."
 fi
 
 # Check development deploy wanted
@@ -213,6 +226,7 @@ if [[ "${NPP_DEV_ENABLED}" -eq 1 ]]; then
     REMOTE_COMMIT_HASH=$(git ls-remote --heads "${GITHUB_REPO}" "refs/heads/${TARGET_BRANCH}" \
       | awk '{print substr($1,1,7)}' | awk '{$1=$1;print}')
 
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} ${COLOR_LIGHT_CYAN}######################${COLOR_RESET}"
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Latest branch: ${COLOR_CYAN}${TARGET_BRANCH}${COLOR_RESET}"
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Latest dev version: ${COLOR_CYAN}${LATEST_VERSION}${COLOR_RESET}"
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Remote commit: ${COLOR_CYAN}${REMOTE_COMMIT_HASH}${COLOR_RESET}"
@@ -299,8 +313,10 @@ if [[ "${NPP_DEV_ENABLED}" -eq 1 ]]; then
         # Adjust ownership (ensure NPP_USER is set in the environment)
         chown -R "${NPP_USER}":"${NPP_USER}" "${PLUGIN_DIR}"
         echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Deployed build ${COLOR_CYAN}${TARGET_BRANCH}${COLOR_RESET} with (commit ${COLOR_CYAN}${CLONED_COMMIT_HASH}${COLOR_RESET})."
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} ${COLOR_LIGHT_CYAN}######################${COLOR_RESET}"
     else
         echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Plugin is up-to-date with commit ${COLOR_CYAN}${REMOTE_COMMIT_HASH}${COLOR_RESET}."
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} ${COLOR_LIGHT_CYAN}######################${COLOR_RESET}"
     fi
 fi
 

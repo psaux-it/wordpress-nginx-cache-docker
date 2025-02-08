@@ -30,7 +30,7 @@ services:
       - WORDPRESS_CONFIG_EXTRA=
           define('FORCE_SSL_ADMIN', true);
           define('FORCE_SSL_LOGIN', true);
-          if (defined('WP_CLI') && WP_CLI && !isset($$_SERVER['HTTP_HOST'])) $$_SERVER['HTTP_HOST'] = "172.19.0.3";
+          if (defined('WP_CLI') && WP_CLI && !isset($$_SERVER['HTTP_HOST'])) $$_SERVER['HTTP_HOST'] = "${NPP_NGINX_IP}";
       - NPP_WEB_ROOT=${NPP_WEB_ROOT_}
       - NPP_NGINX_CACHE_PATH=${NPP_NGINX_CACHE_PATH_}
       - NPP_USER=${NPP_USER_}
@@ -66,6 +66,17 @@ services:
       - command: /scripts/wp-cli.sh
         working_dir: ${NPP_WEB_ROOT_}
         user: root
+    mem_limit: "2GB"
+    mem_reservation: "1GB"
+    cpus: "1.0"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "2GB"
+        reservations:
+          cpus: "1.0"
+          memory: "1GB"
 
   db:
     build:
@@ -94,6 +105,17 @@ services:
     networks:
       npp_network:
         ipv4_address: 172.19.0.2
+    mem_limit: "2GB"
+    mem_reservation: "1GB"
+    cpus: "1.0"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "2GB"
+        reservations:
+          cpus: "0.5"
+          memory: "1GB"
 
   nginx:
     build:
@@ -124,10 +146,22 @@ services:
       - NPP_UID=${NPP_UID_}
       - NPP_GID=${NPP_GID_}
       - NGINX_WEB_USER=${NGINX_WEB_USER_}
+      - NPP_NGINX_IP=${NPP_NGINX_IP}
       - MOUNT_DIR=${MOUNT_DIR_}
     networks:
       npp_network:
         ipv4_address: 172.19.0.3
+    mem_limit: "1.5GB"
+    mem_reservation: "1GB"
+    cpus: "1.0"
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1.5GB"
+        reservations:
+          cpus: "0.5"
+          memory: "1GB"
 
 volumes:
   wordpress-db:
