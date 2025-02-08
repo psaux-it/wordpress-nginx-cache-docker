@@ -165,7 +165,7 @@ if [[ "${#NPP_PLUGINS[@]}" -gt 0 ]]; then
                 echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Plugin ${COLOR_CYAN}${plugin}${COLOR_RESET} installation failed. Please check the logs for more details."
             fi
         else
-            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Plugin ${COLOR_CYAN}${plugin}${COLOR_RESET} is already installed."
+            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Plugin ${COLOR_CYAN}${plugin}${COLOR_RESET} is already installed. Skipping..."
         fi
     done
 else
@@ -182,7 +182,7 @@ if [[ "${#NPP_THEMES[@]}" -gt 0 ]]; then
                 echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Theme ${COLOR_CYAN}${theme}${COLOR_RESET} installation failed. Please check the logs for more details."
             fi
         else
-            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Theme ${COLOR_CYAN}${theme}${COLOR_RESET} is already installed."
+            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Theme ${COLOR_CYAN}${theme}${COLOR_RESET} is already installed. Skipping..."
         fi
     done
 else
@@ -190,8 +190,8 @@ else
 fi
 
 # Check if the current permalink structure is already set
-CURRENT_PERMALINK=$(su -m -c "wp option get permalink_structure" "${NPP_USER}" >/dev/null 2>&1)
-if [[ -z "${CURRENT_PERMALINK}" ]]; then
+CURRENT_PERMALINK=$(su -m -c "wp option get permalink_structure" "${NPP_USER}")
+if [[ -z "$CURRENT_PERMALINK" || "$CURRENT_PERMALINK" == "/index.php/%pagename%/" ]]; then
     # Apply the new permalink structure
     if su -m -c "wp rewrite structure '/%postname%/' --hard" "${NPP_USER}" >/dev/null 2>&1; then
         echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}Permalink structure${COLOR_RESET} has been successfully updated."
@@ -200,13 +200,6 @@ if [[ -z "${CURRENT_PERMALINK}" ]]; then
     fi
 else
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}Permalink structure${COLOR_RESET} is already properly set. Skipping..."
-fi
-
-# Flush the WordPress cache
-if su -m -c "wp cache flush" "${NPP_USER}" >/dev/null 2>&1; then
-    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}Cache${COLOR_RESET} has been successfully flushed."
-else
-    echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}Failed to flush cache.${COLOR_RESET} Please check logs for more details."
 fi
 
 # Check development deploy wanted
