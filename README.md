@@ -21,11 +21,11 @@ Explore the **[NPP Main GitHub Repository](https://github.com/psaux-it/nginx-fas
 
 Please check the **.env** file for the environment variables used by the project.
 
-Some variables can be directly modified by the user to customize the setup, while others are integral to the project's core configuration. Modifying these core variables for a production environment may require adjustments in other parts of the project to ensure proper integration and workflow. Feel free to customize it to meet your full-stack WordPress **production** needs!
+Some variables can be directly modified by the user to customize the setup easily, while others are hard depend to the project's core configuration. Modifying these core variables for a production environment may require adjustments in other parts of the project to ensure proper integration and workflow. Feel free to customize it to meet your full-stack WordPress **production** needs!
 
 #### Use the Bleeding-Edge Version of NPP or Contribute to Development  
 
-If you want to use the **latest bleeding-edge version** of the NPP plugin or set up a **development environment** to contribute, simply set the following environment variable:  
+If you want to use the **latest bleeding-edge version** of the NPP plugin or set up a **development/test environment**, simply set the following environment variable:  
 
 ```bash
 NPP_DEV_ENABLED=1
