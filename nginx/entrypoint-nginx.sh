@@ -127,7 +127,7 @@ echo -e "${COLOR_LIGHT_CYAN}Path: ${COLOR_RESET}${COLOR_BOLD}${MOUNT_DIR}${COLOR
 echo -e "\n${COLOR_YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${COLOR_RESET}"
 
 # Universal Author messaege
-echo -e "\n${COLOR_RED}${COLOR_BOLD}☪︎${COLOR_RESET} ${COLOR_GREEN}${COLOR_BOLD} Author Message:${COLOR_RESET}"
+echo -e "\n${COLOR_RED}${COLOR_BOLD}☪︎${COLOR_RESET} ${COLOR_GREEN}${COLOR_BOLD}Author Message:${COLOR_RESET}"
 echo -e "${COLOR_LIGHT_CYAN}Message: ${COLOR_RESET}${COLOR_BOLD}1.f3 e5 2.g4 Qh4# ~checkmate${COLOR_RESET}"
 
 # Final separator
