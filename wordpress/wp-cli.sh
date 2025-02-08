@@ -226,6 +226,7 @@ if [[ "${NPP_DEV_ENABLED}" -eq 1 ]]; then
     REMOTE_COMMIT_HASH=$(git ls-remote --heads "${GITHUB_REPO}" "refs/heads/${TARGET_BRANCH}" \
       | awk '{print substr($1,1,7)}' | awk '{$1=$1;print}')
 
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} ${COLOR_LIGHT_CYAN}######################${COLOR_RESET}"
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Latest branch: ${COLOR_CYAN}${TARGET_BRANCH}${COLOR_RESET}"
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Latest dev version: ${COLOR_CYAN}${LATEST_VERSION}${COLOR_RESET}"
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Remote commit: ${COLOR_CYAN}${REMOTE_COMMIT_HASH}${COLOR_RESET}"
@@ -312,8 +313,10 @@ if [[ "${NPP_DEV_ENABLED}" -eq 1 ]]; then
         # Adjust ownership (ensure NPP_USER is set in the environment)
         chown -R "${NPP_USER}":"${NPP_USER}" "${PLUGIN_DIR}"
         echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Deployed build ${COLOR_CYAN}${TARGET_BRANCH}${COLOR_RESET} with (commit ${COLOR_CYAN}${CLONED_COMMIT_HASH}${COLOR_RESET})."
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} ${COLOR_LIGHT_CYAN}######################${COLOR_RESET}"
     else
         echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} Plugin is up-to-date with commit ${COLOR_CYAN}${REMOTE_COMMIT_HASH}${COLOR_RESET}."
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DEV:${COLOR_RESET} ${COLOR_LIGHT_CYAN}######################${COLOR_RESET}"
     fi
 fi
 
