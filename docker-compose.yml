@@ -167,6 +167,11 @@ volumes:
   wordpress-db:
   wordpress:
   nginx_cache:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=500m
 
 networks:
   npp_network:
