@@ -65,7 +65,7 @@ wait_for_service "wordpress" 9001
 wait_for_service "wordpress" 9999
 
 # Check if required environment variables are set
-for var in NPP_UID NPP_GID NPP_USER NPP_WEB_ROOT NGINX_WEB_USER MOUNT_DIR NPP_NGINX_IP; do
+for var in NPP_UID NPP_GID NPP_USER NPP_WEB_ROOT NGINX_WEB_USER MOUNT_DIR NPP_HTTP_HOST; do
     if [[ -z "${!var:-}" ]]; then
         echo -e "${COLOR_RED}${COLOR_BOLD}NPP-NGINX-FATAL:${COLOR_RESET} Missing required environment variable: ${COLOR_LIGHT_CYAN}${var}${COLOR_RESET} - ${COLOR_RED}Exiting...${COLOR_RESET}"
         exit 1
@@ -106,7 +106,7 @@ echo -e "\n${COLOR_YELLOW}━━━━━━━━━━━━━━━━━━
 
 # URL Access Information
 echo -e "\n${COLOR_GREEN}${COLOR_BOLD}🔑 Access WordPress:${COLOR_RESET}"
-echo -e "${COLOR_LIGHT_CYAN}URL: ${COLOR_RESET}${COLOR_BOLD}https://${NPP_NGINX_IP}/wp-admin${COLOR_RESET}"
+echo -e "${COLOR_LIGHT_CYAN}URL: ${COLOR_RESET}${COLOR_BOLD}https://${NPP_HTTP_HOST}/wp-admin${COLOR_RESET}"
 
 # Separator for credentials
 echo -e "\n${COLOR_YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${COLOR_RESET}"
