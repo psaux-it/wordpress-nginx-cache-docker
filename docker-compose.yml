@@ -16,7 +16,7 @@ services:
       - ${WORDPRESS_HOME}:${NPP_WEB_ROOT_}
       - ${NGINX_CACHE}:${NPP_NGINX_CACHE_PATH_}
       - ${NGINX_CONF}:/etc/nginx/nginx.conf
-      - ${NPP_NGINX_CONF}:/etc/nginx/conf.d/npp.conf
+      - ${NPP_NGINX_CONF}:/etc/nginx/conf.d/default.conf
       - ${NPP_FPM_CONF}:/usr/local/etc/php-fpm.d/www.conf
       - ${FPM_DOCKER_CONF}:/usr/local/etc/php-fpm.d/zz-docker.conf
       - ${NPP_PHP_CONF}:/usr/local/etc/php/conf.d/npp.ini
@@ -30,9 +30,11 @@ services:
       - WORDPRESS_CONFIG_EXTRA=
           define('FORCE_SSL_ADMIN', true);
           define('FORCE_SSL_LOGIN', true);
-          if (defined('WP_CLI') && WP_CLI && !isset($$_SERVER['HTTP_HOST'])) $$_SERVER['HTTP_HOST'] = "${NPP_NGINX_IP}";
+          if (defined('WP_CLI') && WP_CLI && !isset($$_SERVER['HTTP_HOST'])) $$_SERVER['HTTP_HOST'] = "${NPP_HTTP_HOST}";
       - NPP_WEB_ROOT=${NPP_WEB_ROOT_}
       - NPP_NGINX_CACHE_PATH=${NPP_NGINX_CACHE_PATH_}
+      - NPP_NGINX_IP=${NPP_NGINX_IP}
+      - NPP_HTTP_HOST=${NPP_HTTP_HOST}
       - NPP_USER=${NPP_USER_}
       - NPP_UID=${NPP_UID_}
       - NPP_GID=${NPP_GID_}
@@ -61,7 +63,6 @@ services:
       - /dev/fuse:/dev/fuse
     networks:
       npp_network:
-        ipv4_address: 172.19.0.4
     post_start:
       - command: /scripts/wp-cli.sh
         working_dir: ${NPP_WEB_ROOT_}
@@ -104,7 +105,6 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     networks:
       npp_network:
-        ipv4_address: 172.19.0.2
     mem_limit: "2GB"
     mem_reservation: "1GB"
     cpus: "1.0"
@@ -135,7 +135,7 @@ services:
       - ${WORDPRESS_HOME}:${NPP_WEB_ROOT_}
       - ${NGINX_CACHE}:${NPP_NGINX_CACHE_PATH_}
       - ${NGINX_CONF}:/etc/nginx/nginx.conf
-      - ${NPP_NGINX_CONF}:/etc/nginx/conf.d/npp.conf
+      - ${NPP_NGINX_CONF}:/etc/nginx/conf.d/default.conf
       - ${NPP_NGINX_PARAMS_CONF}:/etc/nginx/fastcgi_params
       - ${NGINX_SSL_CERTS}:/etc/ssl:ro
       - /etc/localtime:/etc/localtime:ro
@@ -146,11 +146,11 @@ services:
       - NPP_UID=${NPP_UID_}
       - NPP_GID=${NPP_GID_}
       - NGINX_WEB_USER=${NGINX_WEB_USER_}
-      - NPP_NGINX_IP=${NPP_NGINX_IP}
+      - NPP_HTTP_HOST=${NPP_HTTP_HOST}
       - MOUNT_DIR=${MOUNT_DIR_}
     networks:
       npp_network:
-        ipv4_address: 172.19.0.3
+        ipv4_address: 172.19.84.1
     mem_limit: "1.5GB"
     mem_reservation: "1GB"
     cpus: "1.0"
@@ -167,11 +167,17 @@ volumes:
   wordpress-db:
   wordpress:
   nginx_cache:
+    driver: local
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+      o: size=500m
 
 networks:
   npp_network:
     name: npp-wp
     driver: bridge
+    enable_ipv6: false
     ipam:
       config:
         - subnet: "172.19.0.0/16"
