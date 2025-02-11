@@ -44,19 +44,19 @@ wait_for_service() {
 
     while ! nc -z "${host}" "${port}"; do
         if [[ "${retries}" -le 0 ]]; then
-            echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI-FATAL:${COLOR_RESET} ${COLOR_CYAN}${host}:${port}${COLOR_RESET} is not responding. Exiting..."
+            echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-FATAL:${COLOR_RESET} ${COLOR_CYAN}${host}:${port}${COLOR_RESET} is not responding. Exiting..."
             exit 1
         fi
-        echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Waiting for ${COLOR_CYAN}${host}:${port}${COLOR_RESET} to become available..."
+        echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Waiting for ${COLOR_CYAN}${host}:${port}${COLOR_RESET} to become available..."
         sleep "$wait_time"
         retries=$((retries - 1))
     done
 
-    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}${host}:${port}${COLOR_RESET} is now available! Proceeding..."
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} ${COLOR_CYAN}${host}:${port}${COLOR_RESET} is now available! Proceeding..."
 }
 
 # Display pre-entrypoint start message
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}${COLOR_BOLD}[POST-START]:${COLOR_RESET} Initialization of ${COLOR_CYAN}Core WordPress${COLOR_RESET} has started.."
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} ${COLOR_CYAN}${COLOR_BOLD}[POST-START]:${COLOR_RESET} Starting post-start operations for ${COLOR_CYAN}NPP Dockerized${COLOR_RESET}..."
 
 # Check if required environment variables are set
 for var in \
@@ -64,6 +64,8 @@ for var in \
     NPP_UID \
     NPP_GID \
     NPP_DEV_ENABLED \
+    NPP_NGINX_IP \
+    NPP_HTTP_HOST \
     NPP_DEV_PLUGIN_NAME \
     NPP_DEV_PLUGIN_DIR \
     NPP_DEV_TMP_CLONE_DIR \
@@ -88,6 +90,38 @@ done
 # We need to sure '/var/www/html' exists for 'wp-cli'
 wait_for_service "wordpress" 9001
 
+# To enable NPP - Nginx Cache Preload action:
+# #####################################################################
+# For Development Environment:
+#   - Cause HTTP_HOST is localhost,
+#   - Map the WordPress container's 'localhost' to Nginx's IP.
+#   - Note: This is a tricky hack and only used for the development environment!
+#
+# For Production Environments: (Nginx sits on host or container)
+#   - I assume you use a publicly resolvable FQDN for WordPress (WP_SITEURL & WP_HOME);
+#     - Ensure outgoing traffic is allowed from the container.
+#     - Verify that /etc/resolv.conf in the container is correctly configured.
+#     - Verify that the container has internet access.
+#     + That's all for Cache Preload works like a charm.
+#######################################################################
+if [[ "${NPP_DEV_ENABLED}" -eq 1 ]]; then
+    IP="${NPP_NGINX_IP}"
+    LINE="${IP}     ${NPP_HTTP_HOST}"
+    HOSTS="/etc/hosts"
+
+    # Check if the Nginx static IP defined
+    if ! grep -q "${IP}" "${HOSTS}"; then
+        # Map localhost to Nginx Static IP
+        echo -e "${LINE}\n$(cat ${HOSTS})" > /tmp/hosts.new
+        cat /tmp/hosts.new > "${HOSTS}"
+        rm -f /tmp/hosts.new
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Mapped '${COLOR_LIGHT_CYAN}${NPP_HTTP_HOST}${COLOR_RESET}' to Nginx IP '${COLOR_LIGHT_CYAN}${IP}${COLOR_RESET}' in ${COLOR_LIGHT_CYAN}${HOSTS}${COLOR_RESET}."
+    else
+        echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Mapping already exists: '${COLOR_LIGHT_CYAN}${NPP_HTTP_HOST}${COLOR_RESET}' -> '${COLOR_LIGHT_CYAN}${IP}${COLOR_RESET}'."
+    fi
+fi
+#######################################################################
+
 # Check ownership of webroot for consistency
 check_ownership() {
     while IFS=" " read -r owner group file; do
@@ -111,18 +145,18 @@ check_permissions() {
 
 # Own website with Isolated PHP process owner user 'npp'
 if ! check_ownership; then
-    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Setting ownership of ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} to user/group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} with UID ${COLOR_CYAN}${NPP_UID}${COLOR_RESET} and GID ${COLOR_CYAN}${NPP_GID}${COLOR_RESET}."
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Setting ownership of ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} to user/group ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} with UID ${COLOR_CYAN}${NPP_UID}${COLOR_RESET} and GID ${COLOR_CYAN}${NPP_GID}${COLOR_RESET}."
     chown -R "${NPP_UID}":"${NPP_GID}" "${NPP_WEB_ROOT}"
 else
-    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Ownership of ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} is already properly set."
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Ownership of ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} is already properly set."
 fi
 
 # Set proper permission to restrict environment for 'others'
 if ! check_permissions; then
-    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Setting permissions for ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} to completely isolate the environment."
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Setting permissions for ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} to completely isolate the environment."
     chmod -R u=rwX,g=rX,o= "${NPP_WEB_ROOT}"
 else
-    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Permission for ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} is already properly set."
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Permission for ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}${COLOR_RESET} is already properly set."
 fi
 
 # Install core WordPress
@@ -321,7 +355,7 @@ if [[ "${NPP_DEV_ENABLED}" -eq 1 ]]; then
 fi
 
 # Listen on dummy port for 'nginx' container health check
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Starting to listen on dummy port ${COLOR_CYAN}9999${COLOR_RESET}..."
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Starting to listen on dummy port ${COLOR_CYAN}9999${COLOR_RESET}..."
 if ! nc -zv 127.0.0.1 9999 2>/dev/null; then
     nc -lk -p 9999 >/dev/null 2>&1 &
 fi
