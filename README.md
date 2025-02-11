@@ -16,6 +16,7 @@ Explore the **[NPP Main GitHub Repository](https://github.com/psaux-it/nginx-fas
 - ✅ Supports a wide range of **PHP extensions**
 - ✅ Easily switch between the **stable** release and the **bleeding-edge dev** version of the **NPP**
 - ✅ All containers powered by **Debian 12** for a stable, consistent environment
+- ✅ Compatible with Windows WSL and Linux Hosts
 
 ## 🔑 Environment Variables
 
@@ -23,7 +24,7 @@ Please check the **.env** file for the environment variables used by the project
 
 Some variables can be directly modified by the user to customize the setup easily, while others are hard depend to the project's core configuration. Modifying these core variables for a production environment may require adjustments in other parts of the project to ensure proper integration and workflow. Feel free to customize it to meet your full-stack WordPress **production** needs!
 
-#### Use the Bleeding-Edge Version of NPP or Contribute to Development  
+#### Use the Bleeding-Edge Version of NPP or Contribute to Development (Default)
 
 If you want to use the **latest bleeding-edge version** of the NPP plugin or set up a **development/test environment**, simply set the following environment variable:  
 
@@ -62,8 +63,8 @@ docker compose up -d --build
 
 ### 🚀 **Post-Container Startup Access**
 - The WordPress site can be accessed at the host machine:
-  - 🔒 [https://172.19.0.3](https://172.19.0.3)
-  - 🌐 [http://172.19.0.3](http://172.19.0.3)
+  - 🔒 [https://localhost](https://localhost)
+  - 🌐 [http://localhost](http://localhost)
 
 - Default WordPress **wp-admin** login credentials:
   - **Username**: `npp`
