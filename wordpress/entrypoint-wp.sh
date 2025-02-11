@@ -44,6 +44,8 @@ for var in \
     NPP_GID \
     NPP_NGINX_CACHE_PATH \
     NPP_USER \
+    NPP_HTTP_HOST \
+    NPP_NGINX_IP \
     MOUNT_DIR; do
     if [[ -z "${!var:-}" ]]; then
         echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-FATAL:${COLOR_RESET} Missing required environment variable(s): ${COLOR_LIGHT_CYAN}${var}${COLOR_RESET} - ${COLOR_RED}Exiting...${COLOR_RESET}"
@@ -91,6 +93,23 @@ chown -R root:root \
     /usr/local/etc/php/conf.d &&
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Permissions fixed successfully!" ||
 echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Failed to fix permissions!"
+
+# To enable NPP Nginx PRELOAD actions for the WordPress HTTP_HOST (localhost),
+# map the WordPress container's 'localhost' to 'Nginx's static IP'
+########################################################################
+IP="${NPP_NGINX_IP}"
+LINE="${IP} ${NPP_HTTP_HOST}"
+HOSTS="/etc/hosts"
+
+# Check if the Nginx static IP defined
+if ! grep -q "${IP}" "${HOSTS}"; then
+    # Map localhost to Nginx Static IP
+    sed -i "1i${LINE}" "${HOSTS}"
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Mapped '${COLOR_LIGHT_CYAN}${NPP_HTTP_HOST}${COLOR_RESET}' to Nginx static IP '${COLOR_LIGHT_CYAN}${IP}${COLOR_RESET}' in ${COLOR_LIGHT_CYAN}${HOSTS}${COLOR_RESET}."
+else
+    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Mapping already exists: '${COLOR_LIGHT_CYAN}${NPP_HTTP_HOST}${COLOR_RESET}' -> '${COLOR_LIGHT_CYAN}${IP}${COLOR_RESET}'."
+fi
+#######################################################################
 
 # Wait for the 'wordpress-db' to be ready
 until mysql -h wordpress-db -u"${WORDPRESS_DB_USER}" -p"${WORDPRESS_DB_PASSWORD}" "${WORDPRESS_DB_NAME}" -e "SELECT 1" > /dev/null 2>&1; do
