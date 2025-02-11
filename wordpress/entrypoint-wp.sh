@@ -46,6 +46,7 @@ for var in \
     NPP_USER \
     NPP_HTTP_HOST \
     NPP_NGINX_IP \
+    NPP_DEV_ENABLED \
     MOUNT_DIR; do
     if [[ -z "${!var:-}" ]]; then
         echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-FATAL:${COLOR_RESET} Missing required environment variable(s): ${COLOR_LIGHT_CYAN}${var}${COLOR_RESET} - ${COLOR_RED}Exiting...${COLOR_RESET}"
@@ -94,20 +95,36 @@ chown -R root:root \
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Permissions fixed successfully!" ||
 echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Failed to fix permissions!"
 
-# To enable NPP Nginx PRELOAD actions for the WordPress HTTP_HOST (localhost),
-# map the WordPress container's 'localhost' to 'Nginx's static IP'
-########################################################################
-IP="${NPP_NGINX_IP}"
-LINE="${IP} ${NPP_HTTP_HOST}"
-HOSTS="/etc/hosts"
+# To enable NPP - Nginx Cache Preload action:
+# #####################################################################
+# For Development Environment:
+#   - Cause HTTP_HOST is localhost,
+#   - Map the WordPress container's 'localhost' to Nginx's IP.
+#   - Note: This is a tricky hack and only used for the development environment!
+#
+# For Production Environments: (Nginx sits on host or container)
+#   - I assume you use a publicly resolvable FQDN for WordPress (WP_SITEURL & WP_HOME);
+#     - Ensure outgoing traffic is allowed from the container.
+#     - Verify that /etc/resolv.conf in the container is correctly configured.
+#     - Verify that the container has internet access.
+#     + That's all for Cache Preload works like a charm.
+#######################################################################
+if [[ "${NPP_DEV_ENABLED}" -eq 1 ]]; then
+    IP="${NPP_NGINX_IP}"
+    LINE="${IP} ${NPP_HTTP_HOST}"
+    HOSTS="/etc/hosts"
 
-# Check if the Nginx static IP defined
-if ! grep -q "${IP}" "${HOSTS}"; then
-    # Map localhost to Nginx Static IP
-    sed -i "1i${LINE}" "${HOSTS}"
-    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Mapped '${COLOR_LIGHT_CYAN}${NPP_HTTP_HOST}${COLOR_RESET}' to Nginx static IP '${COLOR_LIGHT_CYAN}${IP}${COLOR_RESET}' in ${COLOR_LIGHT_CYAN}${HOSTS}${COLOR_RESET}."
-else
-    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Mapping already exists: '${COLOR_LIGHT_CYAN}${NPP_HTTP_HOST}${COLOR_RESET}' -> '${COLOR_LIGHT_CYAN}${IP}${COLOR_RESET}'."
+    # Hack the hosts file
+    chmod 644 "${HOSTS}"
+
+    # Check if the Nginx static IP defined
+    if ! grep -q "${IP}" "${HOSTS}"; then
+        # Map localhost to Nginx Static IP
+        sed -i "1i${LINE}" "${HOSTS}"
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Mapped '${COLOR_LIGHT_CYAN}${NPP_HTTP_HOST}${COLOR_RESET}' to Nginx static IP '${COLOR_LIGHT_CYAN}${IP}${COLOR_RESET}' in ${COLOR_LIGHT_CYAN}${HOSTS}${COLOR_RESET}."
+    else
+        echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Mapping already exists: '${COLOR_LIGHT_CYAN}${NPP_HTTP_HOST}${COLOR_RESET}' -> '${COLOR_LIGHT_CYAN}${IP}${COLOR_RESET}'."
+    fi
 fi
 #######################################################################
 
