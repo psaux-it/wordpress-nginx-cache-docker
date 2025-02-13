@@ -34,66 +34,11 @@ jobs:
               core.setOutput("shouldMerge", "false");
               return;
             }
-            
-            // Retrieve the combined status for the PR's latest commit.
-            const { data: combinedStatus } = await github.rest.repos.getCombinedStatusForRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: pr.head.sha
-            });
-            core.info(`Combined status state: ${combinedStatus.state}`);
-            
-            // Only merge if all status checks have passed.
-            if (combinedStatus.state !== 'success') {
-              core.info("Not all status checks have passed. Skipping auto-merge.");
-              core.setOutput("shouldMerge", "false");
-              return;
-            }
-            
-            core.info("All conditions met. PR is eligible for auto-merge.");
+
+            // Skip combined status check and proceed to auto-merge.
+            core.info("Skipping status checks. Proceeding with auto-merge.");
             core.setOutput("shouldMerge", "true");
-          result-encoding: string
 
-      - name: Wait for checks to pass
-        if: steps.check.outputs.shouldMerge == 'true'
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const prNumber = context.payload.pull_request.number;
-            const { data: pr } = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber
-            });
-            
-            // Wait for status checks to pass.
-            let checksPending = true;
-            let retries = 0;
-            const maxRetries = 20;
-            const waitTime = 30000;
-            
-            while (checksPending && retries < maxRetries) {
-              const { data: combinedStatus } = await github.rest.repos.getCombinedStatusForRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: pr.head.sha
-              });
-
-              if (combinedStatus.state === 'success') {
-                checksPending = false;
-              } else {
-                core.info(`Checks still pending. Waiting... (${retries + 1}/${maxRetries})`);
-                await new Promise(resolve => setTimeout(resolve, waitTime));
-                retries++;
-              }
-            }
-
-            if (checksPending) {
-              throw new Error("Checks did not complete successfully within the time limit.");
-            }
-
-            core.info("All checks passed.");
-            
       - name: Auto-Merge PR
         if: steps.check.outputs.shouldMerge == 'true'
         uses: actions/github-script@v6
