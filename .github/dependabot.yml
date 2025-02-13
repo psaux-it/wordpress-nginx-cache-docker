@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: "docker"
+    directory: "/wordpress"
+    schedule:
+      interval: "daily"
+    allow:
+      - dependency-name: "wordpress"
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
