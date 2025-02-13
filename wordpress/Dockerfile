@@ -6,7 +6,7 @@
 # ----------------------------------------------------------------------------     #
 
 # Here the magic, the rest of it is ordinary
-FROM wordpress:6.7.1-php8.2-fpm
+FROM wordpress:6.7.2-php8.2-fpm
 
 # Set some ugly stuff
 ENV LANG=C.UTF-8 \
