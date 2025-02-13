@@ -4,22 +4,25 @@ updates:
     directory: "/wordpress"
     schedule:
       interval: "daily"
+    labels:
+      - automerge
     allow:
       - dependency-name: "wordpress"
-    automerge: true
 
   - package-ecosystem: "docker"
     directory: "/mysql"
     schedule:
       interval: "daily"
+    labels:
+      - automerge
     allow:
       - dependency-name: "mysql"
-    automerge: true
 
   - package-ecosystem: "docker"
     directory: "/nginx"
     schedule:
       interval: "daily"
+    labels:
+      - automerge
     allow:
       - dependency-name: "nginx"
-    automerge: true
