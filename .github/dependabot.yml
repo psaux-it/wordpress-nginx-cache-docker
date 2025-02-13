@@ -9,7 +9,7 @@ updates:
     allow:
       - dependency-name: "wordpress"
     commit-message:
-      prefix: [docker] "
+      prefix: "[docker]"
 
   - package-ecosystem: "docker"
     directory: "/mysql"
@@ -20,7 +20,7 @@ updates:
     allow:
       - dependency-name: "mysql"
     commit-message:
-      prefix: [docker] "
+      prefix: "[docker]"
 
   - package-ecosystem: "docker"
     directory: "/nginx"
@@ -31,4 +31,4 @@ updates:
     allow:
       - dependency-name: "nginx"
     commit-message:
-      prefix: [docker] "
+      prefix: "[docker]"
