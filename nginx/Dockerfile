@@ -6,7 +6,7 @@
 # ----------------------------------------------------------------------------     #
 
 # Here the magic, the rest of it is ordinary
-FROM nginx:latest
+FROM nginx:1.27.3-bookworm
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
