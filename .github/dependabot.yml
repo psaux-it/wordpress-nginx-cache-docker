@@ -23,6 +23,6 @@ updates:
     schedule:
       interval: "daily"
     labels:
-      - automerge
+      - "automerge"
     allow:
       - dependency-name: "nginx"
