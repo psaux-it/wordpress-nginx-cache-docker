@@ -19,14 +19,14 @@ jobs:
               repo: context.repo.repo,
               pull_number: prNumber
             });
-            
+
             // Only proceed if the PR is created by Dependabot.
             if (pr.user.login !== 'dependabot[bot]') {
               core.info("PR is not from Dependabot. Skipping auto-merge.");
               core.setOutput("shouldMerge", "false");
               return;
             }
-            
+
             // Check if the PR has the 'automerge' label.
             const labels = pr.labels.map(label => label.name);
             if (!labels.includes('automerge')) {
@@ -35,7 +35,6 @@ jobs:
               return;
             }
 
-            // Skip combined status check and proceed to auto-merge.
             core.info("Skipping status checks. Proceeding with auto-merge.");
             core.setOutput("shouldMerge", "true");
 
@@ -52,3 +51,5 @@ jobs:
               merge_method: "squash"
             });
             core.info(`Merge response: ${JSON.stringify(mergeResponse.data)}`);
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
