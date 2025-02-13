@@ -1,0 +1,69 @@
+name: Auto-Merge Dependabot PRs
+
+on:
+  pull_request:
+    types: [opened, reopened, labeled, synchronize]
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if PR is eligible for auto-merge
+        id: check
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+            
+            // Only proceed if the PR is created by Dependabot.
+            if (pr.user.login !== 'dependabot[bot]') {
+              core.info("PR is not from Dependabot. Skipping auto-merge.");
+              core.setOutput("shouldMerge", "false");
+              return;
+            }
+            
+            // Check if the PR has the 'automerge' label.
+            const labels = pr.labels.map(label => label.name);
+            if (!labels.includes('automerge')) {
+              core.info("PR does not have the 'automerge' label. Skipping auto-merge.");
+              core.setOutput("shouldMerge", "false");
+              return;
+            }
+            
+            // Retrieve the combined status for the PR's latest commit.
+            const { data: combinedStatus } = await github.rest.repos.getCombinedStatusForRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: pr.head.sha
+            });
+            core.info(`Combined status state: ${combinedStatus.state}`);
+            
+            // Only merge if all status checks have passed.
+            if (combinedStatus.state !== 'success') {
+              core.info("Not all status checks have passed. Skipping auto-merge.");
+              core.setOutput("shouldMerge", "false");
+              return;
+            }
+            
+            core.info("All conditions met. PR is eligible for auto-merge.");
+            core.setOutput("shouldMerge", "true");
+          result-encoding: string
+
+      - name: Auto-Merge PR
+        if: steps.check.outputs.shouldMerge == 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const mergeResponse = await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              merge_method: "squash"
+            });
+            core.info(`Merge response: ${JSON.stringify(mergeResponse.data)}`);
