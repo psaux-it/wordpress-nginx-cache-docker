@@ -5,12 +5,8 @@
 #          WordPress, PHP-FPM, Nginx, MySQL, WP-CLI, and necessary PHP extensions. #
 # ----------------------------------------------------------------------------     #
 
-# Set core versions
-ARG NPP_PHP_VERSION=8.2 \
-    NPP_WORDPRESS_VERSION=6.7.1
-
 # Here the magic, the rest of it is ordinary
-FROM wordpress:${NPP_WORDPRESS_VERSION}-php${NPP_PHP_VERSION}-fpm
+FROM wordpress:6.7.1-php8.2-fpm
 
 # Set some ugly stuff
 ENV LANG=C.UTF-8 \
