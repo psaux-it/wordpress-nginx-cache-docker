@@ -12,6 +12,7 @@ jobs:
         id: check
         uses: actions/github-script@v6
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const prNumber = context.payload.pull_request.number;
             const { data: pr } = await github.rest.pulls.get({
@@ -42,6 +43,7 @@ jobs:
         if: steps.check.outputs.shouldMerge == 'true'
         uses: actions/github-script@v6
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const prNumber = context.payload.pull_request.number;
             const mergeResponse = await github.rest.pulls.merge({
@@ -51,5 +53,3 @@ jobs:
               merge_method: "squash"
             });
             core.info(`Merge response: ${JSON.stringify(mergeResponse.data)}`);
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
