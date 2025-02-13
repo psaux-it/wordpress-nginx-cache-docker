@@ -7,10 +7,14 @@ on:
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
     steps:
       - name: Check if PR is eligible for auto-merge
         id: check
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7.0.1  # Latest version
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -41,7 +45,7 @@ jobs:
 
       - name: Auto-Merge PR
         if: steps.check.outputs.shouldMerge == 'true'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7.0.1  # Latest version
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
