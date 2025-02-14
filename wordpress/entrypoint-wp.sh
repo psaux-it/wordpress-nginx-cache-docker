@@ -44,7 +44,6 @@ for var in \
     NPP_GID \
     NPP_NGINX_CACHE_PATH \
     NPP_USER \
-    NPP_DEV_ENABLED \
     MOUNT_DIR; do
     if [[ -z "${!var:-}" ]]; then
         echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-FATAL:${COLOR_RESET} Missing required environment variable(s): ${COLOR_LIGHT_CYAN}${var}${COLOR_RESET} - ${COLOR_RED}Exiting...${COLOR_RESET}"
