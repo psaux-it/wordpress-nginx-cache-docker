@@ -63,8 +63,10 @@ services:
       - /dev/fuse:/dev/fuse
     networks:
       npp_network:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     post_start:
-      - command: /scripts/wp-cli.sh
+      - command: /scripts/wp-post.sh
         working_dir: ${NPP_WEB_ROOT_}
         user: root
     mem_limit: "2GB"
