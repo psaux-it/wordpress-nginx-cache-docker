@@ -134,7 +134,7 @@ services:
     depends_on:
       - wordpress
     volumes:
-      - ${WORDPRESS_HOME}:${NPP_WEB_ROOT_}
+      - ${WORDPRESS_HOME}:${NPP_WEB_ROOT_}:ro
       - ${NGINX_CACHE}:${NPP_NGINX_CACHE_PATH_}
       - ${NGINX_CONF}:/etc/nginx/nginx.conf
       - ${NPP_NGINX_CONF}:/etc/nginx/conf.d/default.conf
