@@ -65,6 +65,7 @@ for var in \
     NPP_GID \
     NPP_DEV_ENABLED \
     NPP_HTTP_HOST \
+    NPP_HACK_HOST \
     NPP_DEV_PLUGIN_NAME \
     NPP_DEV_PLUGIN_DIR \
     NPP_DEV_TMP_CLONE_DIR \
@@ -126,11 +127,11 @@ resolve_host() {
 }
 
 # To enable NPP Plugin Nginx Cache Preload action:
-# ############################################################################################################
-# The NPP WordPress plugin uses "wget" with "WP_SITEURL" from inside the WordPress container to Preload cache.
+# ##################################################################################################################
+# The NPP WordPress plugin uses "wget" with "WP_SITEURL" from inside the WordPress container to Preload Nginx Cache.
 # This means that if "WP_SITEURL" is set to "localhost", wget will attempt to fetch URLs from
 # the containers own loopback interface rather than reaching the Nginx server that handles
-# cache preload requests.
+# Cache Preload requests.
 #
 # To handle that;
 #
@@ -158,8 +159,8 @@ resolve_host() {
 #       3. Recommended docker way, edit wordpress service in docker-compose.yml,
 #          extra_hosts:
 #            - "example.com:Nginx_LAN_IP"
-###############################################################################################################
-if [[ "${NPP_DEV_ENABLED}" -eq 1 ]]; then
+###################################################################################################################
+if [[ "${NPP_HACK_HOST}" -eq 1 ]]; then
     # Create array
     mapfile -t ip_array < <(resolve_host host.docker.internal)
 
@@ -179,7 +180,7 @@ if [[ "${NPP_DEV_ENABLED}" -eq 1 ]]; then
         echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} ${COLOR_RED}Hacked!${COLOR_RESET} Mapped ${COLOR_LIGHT_CYAN}${NPP_HTTP_HOST}${COLOR_RESET} to host.docker.internal ${COLOR_LIGHT_CYAN}${ip_array[@]}${COLOR_RESET} in ${COLOR_LIGHT_CYAN}${HOSTS}${COLOR_RESET}."
     fi
 fi
-################################################################################################################
+####################################################################################################################
 
 # Check ownership of webroot for consistency
 check_ownership() {
