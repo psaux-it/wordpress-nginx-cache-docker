@@ -98,7 +98,7 @@ resolve_host() {
     local result=()
 
     # Try to get IPv4 address
-    ipv4="$(ping -4 -c 1 "$host" | awk -F'[()]' '{print $2}' | head -n 1)"
+    ipv4="$(ping -4 -c 1 "$host" | grep -oP '(?<=\()[^)]+' | head -n 1)"
 
     # Fallback to find IP
     ip_fallback="$(getent hosts "${host}" | awk '{ print $1 }')"
