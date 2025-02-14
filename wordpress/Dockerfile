@@ -43,6 +43,7 @@ RUN apt-get update && apt-get install -y \
     # Install dependencies for service health checks
     mariadb-client \
     netcat-traditional \
+    iputils-ping \
     # Install common dependencies
     curl \
     # Install dev deploy dependencies
@@ -104,11 +105,11 @@ RUN install-php-extensions ${PHP_EXTENSIONS}
 
 # Copy the scripts into the container
 COPY wordpress/entrypoint-wp.sh /entrypoint-wp.sh
-COPY wordpress/wp-cli.sh /scripts/wp-cli.sh
+COPY wordpress/wp-post.sh /scripts/wp-post.sh
 
 # Make sure scripts are executable
 RUN chmod +x /entrypoint-wp.sh
-RUN chmod +x /scripts/wp-cli.sh
+RUN chmod +x /scripts/wp-post.sh
 
 # Remove build time dependencies to keep image consistent
 RUN apt-get purge -y \
