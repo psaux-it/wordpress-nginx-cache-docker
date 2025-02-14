@@ -64,7 +64,6 @@ for var in \
     NPP_UID \
     NPP_GID \
     NPP_DEV_ENABLED \
-    NPP_NGINX_IP \
     NPP_HTTP_HOST \
     NPP_DEV_PLUGIN_NAME \
     NPP_DEV_PLUGIN_DIR \
@@ -160,7 +159,6 @@ resolve_host() {
 #          extra_hosts:
 #            - "example.com:Nginx_LAN_IP"
 ###############################################################################################################
-
 if [[ "${NPP_DEV_ENABLED}" -eq 1 ]]; then
     # Create array
     mapfile -t ip_array < <(resolve_host host.docker.internal)
@@ -170,22 +168,15 @@ if [[ "${NPP_DEV_ENABLED}" -eq 1 ]]; then
     HOSTS="/etc/hosts"
 
     # Hack /etc/hosts kindly, not make container upset
-    # Map to host.docker.internal if available
+    # Map to host.docker.internal
     if (( ${#ip_array[@]} )); then
         for IP in "${ip_array[@]}"; do
             echo "${IP} ${NPP_HTTP_HOST}" >> "${TEMP_HOSTS}"
         done
+
         cat "${HOSTS}" >> "${TEMP_HOSTS}"
         cat "${TEMP_HOSTS}" > "${HOSTS}"
         echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} ${COLOR_RED}Hacked!${COLOR_RESET} Mapped ${COLOR_LIGHT_CYAN}${NPP_HTTP_HOST}${COLOR_RESET} to host.docker.internal ${COLOR_LIGHT_CYAN}${ip_array[@]}${COLOR_RESET} in ${COLOR_LIGHT_CYAN}${HOSTS}${COLOR_RESET}."
-    else
-        # Fallback, Map to NGINX container IP
-        IP="${NPP_NGINX_IP}"
-        LINE="${IP} ${NPP_HTTP_HOST}"
-        HOSTS="/etc/hosts"
-        echo -e "${LINE}\n$(cat ${HOSTS})" > "${TEMP_HOSTS}"
-        cat "${TEMP_HOSTS}" > "${HOSTS}"
-        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} ${COLOR_RED}Hacked!${COLOR_RESET} Mapped ${COLOR_LIGHT_CYAN}${NPP_HTTP_HOST}${COLOR_RESET} to Nginx container IP ${COLOR_LIGHT_CYAN}${IP}${COLOR_RESET} in ${COLOR_LIGHT_CYAN}${HOSTS}${COLOR_RESET}."
     fi
 fi
 ################################################################################################################
