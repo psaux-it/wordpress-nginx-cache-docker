@@ -98,14 +98,10 @@ resolve_host() {
     local result=()
 
     # Try to get IPv4 address
-    if ping -4 -c 1 "${host}" &>/dev/null; then
-        ipv4=$(ping -4 -c 1 "$host" | awk -F'[()]' '{print $2}' | head -n 1)
-    fi
+    ipv4=$(ping -4 -c 1 "$host" | awk -F'[()]' '{print $2}' | head -n 1)
 
     # Fallback to find IP
-    if getent hosts "${host}" &>/dev/null; then
-        ip_fallback=$(getent hosts "${host}" | awk '{ print $1 }')
-    fi
+    ip_fallback=$(getent hosts "${host}" | awk '{ print $1 }')
 
     # No IP found
     if [[ -z "${ipv4}" && -z "${ip_fallback}" ]]; then
@@ -132,20 +128,20 @@ resolve_host() {
 
 # To enable NPP Plugin Nginx Cache Preload action:
 # ############################################################################################################
-# The NPP WordPress plugin uses 'wget' with 'WP_SITEURL' from inside the WordPress container to Preload cache.
-# This means that if 'WP_SITEURL' is set to "localhost", wget will attempt to fetch URLs from
-# the container’s own loopback interface rather than reaching the Nginx server that handles
+# The NPP WordPress plugin uses "wget" with "WP_SITEURL" from inside the WordPress container to Preload cache.
+# This means that if "WP_SITEURL" is set to "localhost", wget will attempt to fetch URLs from
+# the containers own loopback interface rather than reaching the Nginx server that handles
 # cache preload requests.
 #
 # To handle that;
 #
 # Development Environments:
-#   - During 'wp core install', the '--url' parameter is hardcoded as 'https://localhost',
-#     so WP_SITEURL ends up being 'https://localhost' within the container.
-#   - In this scenario, Nginx Cache Preload requests will try to access 'https://localhost', which
+#   - During "wp core install", the "--url" parameter is hardcoded as "https://localhost",
+#     so WP_SITEURL ends up being "https://localhost" within the container.
+#   - In this scenario, Nginx Cache Preload requests will try to access "https://localhost", which
 #     incorrectly refers to the wordpress container itself.
-#   - To work around this, we update the wordpress container’s '/etc/hosts' file to remap 'localhost' to either
-#     'host.docker.internal' or the actual 'Nginx container IP'. This forces to retrieve resources
+#   - To work around this, we update the wordpress containers "/etc/hosts" file to remap "localhost" to either
+#     "host.docker.internal" or the actual "Nginx container IP". This forces to retrieve resources
 #     from the correct endpoint, enabling the Nginx Cache Preload action during development.
 #   - Keep in mind! Below settings will not work here because of priority issue in /etc/hosts
 #     extra_hosts:
@@ -164,6 +160,7 @@ resolve_host() {
 #          extra_hosts:
 #            - "example.com:Nginx_LAN_IP"
 ###############################################################################################################
+
 if [[ "${NPP_DEV_ENABLED}" -eq 1 ]]; then
     # Create array
     mapfile -t ip_array < <(resolve_host host.docker.internal)
@@ -191,7 +188,7 @@ if [[ "${NPP_DEV_ENABLED}" -eq 1 ]]; then
         echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} ${COLOR_RED}Hacked!${COLOR_RESET} Mapped ${COLOR_LIGHT_CYAN}${NPP_HTTP_HOST}${COLOR_RESET} to Nginx container IP ${COLOR_LIGHT_CYAN}${IP}${COLOR_RESET} in ${COLOR_LIGHT_CYAN}${HOSTS}${COLOR_RESET}."
     fi
 fi
-#######################################################################
+################################################################################################################
 
 # Check ownership of webroot for consistency
 check_ownership() {
