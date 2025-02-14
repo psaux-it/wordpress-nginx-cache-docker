@@ -33,7 +33,6 @@ services:
           if (defined('WP_CLI') && WP_CLI && !isset($$_SERVER['HTTP_HOST'])) $$_SERVER['HTTP_HOST'] = "${NPP_HTTP_HOST}";
       - NPP_WEB_ROOT=${NPP_WEB_ROOT_}
       - NPP_NGINX_CACHE_PATH=${NPP_NGINX_CACHE_PATH_}
-      - NPP_NGINX_IP=${NPP_NGINX_IP}
       - NPP_HTTP_HOST=${NPP_HTTP_HOST}
       - NPP_USER=${NPP_USER_}
       - NPP_UID=${NPP_UID_}
@@ -152,7 +151,6 @@ services:
       - MOUNT_DIR=${MOUNT_DIR_}
     networks:
       npp_network:
-        ipv4_address: 172.19.84.1
     mem_limit: "1.5GB"
     mem_reservation: "1GB"
     cpus: "1.0"
@@ -180,7 +178,3 @@ networks:
     name: npp-wp
     driver: bridge
     enable_ipv6: false
-    ipam:
-      config:
-        - subnet: "172.19.0.0/16"
-          gateway: "172.19.0.1"
