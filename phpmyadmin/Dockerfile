@@ -14,10 +14,10 @@ RUN apt-get update && apt-get install -y \
     mariadb-client
 
 # Copy the entrypoint script into the container
-COPY phpmyadmin/entrypoint-adm.sh /entrypoint-adm.sh
+COPY phpmyadmin/entrypoint-pma.sh /entrypoint-pma.sh
 
 # Make sure the entrypoint script is executable
-RUN chmod +x /entrypoint-adm.sh
+RUN chmod +x /entrypoint-pma.sh
 
 # CMD
-CMD ["/entrypoint-adm.sh", "apache2-foreground"]
+CMD ["/entrypoint-pma.sh", "apache2-foreground"]
