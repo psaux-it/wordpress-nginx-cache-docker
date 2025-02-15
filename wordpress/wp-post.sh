@@ -296,7 +296,7 @@ else
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}Permalink structure${COLOR_RESET} is already properly set. Skipping..."
 fi
 
-# Check development deploy wanted
+# Deploy bleeding edge NPP
 if [[ "${NPP_EDGE}" -eq 1 ]]; then
     # Set variables
     PLUGIN_NAME="${NPP_DEV_PLUGIN_NAME}"
