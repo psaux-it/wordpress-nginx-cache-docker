@@ -4,6 +4,11 @@ Welcome to the Docker project optimized for the **[(NPP) WordPress Plugin](https
 
 Explore the **[NPP Main GitHub Repository](https://github.com/psaux-it/nginx-fastcgi-cache-purge-and-preload)** to access the heart of the plugin development.
 
+https://github.com/user-attachments/assets/5a946953-c7f1-4d44-a8ac-3487018d7114
+
+🔊™️ In The Silence - Giuseppe Ottaviani
+
+
 ## ✨ Features
 
 - ✅ **WordPress** (6.7.2) with **PHP-FPM** (8.2)
