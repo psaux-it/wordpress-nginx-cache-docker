@@ -63,9 +63,10 @@ for var in \
     NPP_USER \
     NPP_UID \
     NPP_GID \
-    NPP_DEV_ENABLED \
+    NPP_EDGE \
     NPP_HTTP_HOST \
     NPP_HACK_HOST \
+    NPP_WEB_ROOT \
     NPP_DEV_PLUGIN_NAME \
     NPP_DEV_PLUGIN_DIR \
     NPP_DEV_TMP_CLONE_DIR \
@@ -74,7 +75,6 @@ for var in \
     WORDPRESS_DB_USER \
     WORDPRESS_DB_PASSWORD \
     WORDPRESS_DB_NAME \
-    NPP_WEB_ROOT \
     WORDPRESS_SITE_URL \
     WORDPRESS_SITE_TITLE \
     WORDPRESS_ADMIN_USER \
@@ -143,7 +143,7 @@ resolve_host() {
 #   - To work around this, we update the wordpress containers "/etc/hosts" file to remap "localhost" to either
 #     "host.docker.internal" or the actual "Nginx container IP". This forces to retrieve resources
 #     from the correct endpoint, enabling the Nginx Cache Preload action during development.
-#   - Keep in mind! Below settings will not work here because of priority issue in /etc/hosts
+#   - Keep in mind! Below settings will not work in dev environment because of the priority issue in /etc/hosts
 #     extra_hosts:
 #       - "localhost:Nginx_LAN_IP"
 #
@@ -297,7 +297,7 @@ else
 fi
 
 # Check development deploy wanted
-if [[ "${NPP_DEV_ENABLED}" -eq 1 ]]; then
+if [[ "${NPP_EDGE}" -eq 1 ]]; then
     # Set variables
     PLUGIN_NAME="${NPP_DEV_PLUGIN_NAME}"
     PLUGIN_DIR="${NPP_DEV_PLUGIN_DIR}"
