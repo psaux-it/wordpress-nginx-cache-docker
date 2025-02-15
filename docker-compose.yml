@@ -40,7 +40,7 @@ services:
       - NPP_PLUGINS=${NPP_PLUGINS_}
       - NPP_THEMES=${NPP_THEMES_}
       - NPP_HACK_HOST=${NPP_HACK_HOST_}
-      - NPP_DEV_ENABLED=${NPP_DEV_ENABLED_}
+      - NPP_EDGE=${NPP_EDGE_}
       - NPP_DEV_PLUGIN_NAME=${NPP_DEV_PLUGIN_NAME_}
       - NPP_DEV_PLUGIN_DIR=${NPP_DEV_PLUGIN_DIR_}
       - NPP_DEV_TMP_CLONE_DIR=${NPP_DEV_TMP_CLONE_DIR_}
@@ -118,6 +118,26 @@ services:
         reservations:
           cpus: "0.5"
           memory: "1GB"
+
+  phpmyadmin:
+    build:
+      context: .
+      dockerfile: phpmyadmin/Dockerfile
+    image: ghcr.io/psaux-it/wordpress-nginx-cache-docker/phpmyadmin:latest
+    container_name: phpmyadmin
+    env_file:
+      - .env
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306
+      - PMA_ABSOLUTE_URI=${PMA_ABSOLUTE_URI_}
+      - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
+      - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}
+      - WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME}
+    networks:
+      - npp_network
+    depends_on:
+      - db
 
   nginx:
     build:
