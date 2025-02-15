@@ -119,6 +119,26 @@ services:
           cpus: "0.5"
           memory: "1GB"
 
+  phpmyadmin:
+    build:
+      context: .
+      dockerfile: phpmyadmin/Dockerfile
+    image: ghcr.io/psaux-it/wordpress-nginx-cache-docker/phpmyadmin:latest
+    container_name: phpmyadmin
+    env_file:
+      - .env
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306
+      - PMA_ABSOLUTE_URI=${WORDPRESS_SITE_URL_}/phpmyadmin/
+      - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
+      - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}
+      - WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME}
+    networks:
+      - npp_network
+    depends_on:
+      - db
+
   nginx:
     build:
       context: .
