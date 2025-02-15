@@ -33,13 +33,13 @@ services:
           if (defined('WP_CLI') && WP_CLI && !isset($$_SERVER['HTTP_HOST'])) $$_SERVER['HTTP_HOST'] = "${NPP_HTTP_HOST}";
       - NPP_WEB_ROOT=${NPP_WEB_ROOT_}
       - NPP_NGINX_CACHE_PATH=${NPP_NGINX_CACHE_PATH_}
-      - NPP_NGINX_IP=${NPP_NGINX_IP}
       - NPP_HTTP_HOST=${NPP_HTTP_HOST}
       - NPP_USER=${NPP_USER_}
       - NPP_UID=${NPP_UID_}
       - NPP_GID=${NPP_GID_}
       - NPP_PLUGINS=${NPP_PLUGINS_}
       - NPP_THEMES=${NPP_THEMES_}
+      - NPP_HACK_HOST=${NPP_HACK_HOST_}
       - NPP_DEV_ENABLED=${NPP_DEV_ENABLED_}
       - NPP_DEV_PLUGIN_NAME=${NPP_DEV_PLUGIN_NAME_}
       - NPP_DEV_PLUGIN_DIR=${NPP_DEV_PLUGIN_DIR_}
@@ -63,8 +63,10 @@ services:
       - /dev/fuse:/dev/fuse
     networks:
       npp_network:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     post_start:
-      - command: /scripts/wp-cli.sh
+      - command: /scripts/wp-post.sh
         working_dir: ${NPP_WEB_ROOT_}
         user: root
     mem_limit: "2GB"
@@ -132,7 +134,7 @@ services:
     depends_on:
       - wordpress
     volumes:
-      - ${WORDPRESS_HOME}:${NPP_WEB_ROOT_}
+      - ${WORDPRESS_HOME}:${NPP_WEB_ROOT_}:ro
       - ${NGINX_CACHE}:${NPP_NGINX_CACHE_PATH_}
       - ${NGINX_CONF}:/etc/nginx/nginx.conf
       - ${NPP_NGINX_CONF}:/etc/nginx/conf.d/default.conf
@@ -150,7 +152,6 @@ services:
       - MOUNT_DIR=${MOUNT_DIR_}
     networks:
       npp_network:
-        ipv4_address: 172.19.84.1
     mem_limit: "1.5GB"
     mem_reservation: "1GB"
     cpus: "1.0"
@@ -178,7 +179,3 @@ networks:
     name: npp-wp
     driver: bridge
     enable_ipv6: false
-    ipam:
-      config:
-        - subnet: "172.19.0.0/16"
-          gateway: "172.19.0.1"

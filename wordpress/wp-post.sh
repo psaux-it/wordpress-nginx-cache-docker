@@ -64,8 +64,8 @@ for var in \
     NPP_UID \
     NPP_GID \
     NPP_DEV_ENABLED \
-    NPP_NGINX_IP \
     NPP_HTTP_HOST \
+    NPP_HACK_HOST \
     NPP_DEV_PLUGIN_NAME \
     NPP_DEV_PLUGIN_DIR \
     NPP_DEV_TMP_CLONE_DIR \
@@ -90,37 +90,97 @@ done
 # We need to sure '/var/www/html' exists for 'wp-cli'
 wait_for_service "wordpress" 9001
 
-# To enable NPP - Nginx Cache Preload action:
-# #####################################################################
-# For Development Environment:
-#   - Cause HTTP_HOST is localhost,
-#   - Map the WordPress container's 'localhost' to Nginx's IP.
-#   - Note: This is a tricky hack and only used for the development environment!
+# Resolve host
+resolve_host() {
+    local host="$1"
+    local ipv4=""
+    local ip_fallback=""
+    local result=()
+
+    # Try to get IPv4 address
+    ipv4="$(ping -4 -c 1 "$host" | grep -oP '(?<=\()[^)]+' | head -n 1)"
+
+    # Fallback to find IP
+    ip_fallback="$(getent hosts "${host}" | awk '{ print $1 }')"
+
+    # No IP found
+    if [[ -z "${ipv4}" && -z "${ip_fallback}" ]]; then
+        return 1
+    # If both IPv4 and fallback IP are found
+    elif [[ -n "${ipv4}" && -n "${ip_fallback}" ]]; then
+        if [[ "${ipv4}" == "${ip_fallback}" ]]; then
+            # If both IPs are equal, return only one
+            result+=("${ipv4}")
+        else
+            # If both IPs are different, return both
+            result+=("${ipv4}")
+            result+=("${ip_fallback}")
+        fi
+    # If only one IP is found
+    elif [[ -n "${ipv4}" ]]; then
+        result+=("${ipv4}")
+    else
+        result+=("${ip_fallback}")
+    fi
+
+    printf "%s\n" "${result[@]}"
+}
+
+# To enable NPP Plugin Nginx Cache Preload action:
+# ##################################################################################################################
+# The NPP WordPress plugin uses "wget" with "WP_SITEURL" from inside the WordPress container to Preload Nginx Cache.
+# This means that if "WP_SITEURL" is set to "localhost", wget will attempt to fetch URLs from
+# the containers own loopback interface rather than reaching the Nginx server that handles
+# Cache Preload requests.
 #
-# For Production Environments: (Nginx sits on host or container)
-#   - I assume you use a publicly resolvable FQDN for WordPress (WP_SITEURL & WP_HOME);
-#     - Ensure outgoing traffic is allowed from the container.
-#     - Verify that /etc/resolv.conf in the container is correctly configured.
-#     - Verify that the container has internet access.
-#     + That's all for Cache Preload works like a charm.
-#######################################################################
-if [[ "${NPP_DEV_ENABLED}" -eq 1 ]]; then
-    IP="${NPP_NGINX_IP}"
-    LINE="${IP}     ${NPP_HTTP_HOST}"
+# To handle that;
+#
+# Development Environments:
+#   - During "wp core install", the "--url" parameter is hardcoded as "https://localhost",
+#     so WP_SITEURL ends up being "https://localhost" within the container.
+#   - In this scenario, Nginx Cache Preload requests will try to access "https://localhost", which
+#     incorrectly refers to the wordpress container itself.
+#   - To work around this, we update the wordpress containers "/etc/hosts" file to remap "localhost" to either
+#     "host.docker.internal" or the actual "Nginx container IP". This forces to retrieve resources
+#     from the correct endpoint, enabling the Nginx Cache Preload action during development.
+#   - Keep in mind! Below settings will not work here because of priority issue in /etc/hosts
+#     extra_hosts:
+#       - "localhost:Nginx_LAN_IP"
+#
+# Production Environment:
+#   - WP_SITEURL is typically set to an FQDN (example.com) pointing to Nginx.
+#   - If the WordPress container has WAN access, can resolve external domains, and allows outgoing traffic,
+#     Cache Preload requests will correctly reach Nginx over the WAN route.
+#   - If the wordpress container lacks WAN access, external DNS resolution, or outgoing traffic:
+#     - WP_SITEURL (example.com) must resolve internally to Nginx LAN IP. (Nginx can sits on host or as a container)
+#     - Solutions:
+#       1. Internal DNS resolver mapping WP_SITEURL to Nginx's LAN IP.
+#       2. Manually adding WP_SITEURL to /etc/hosts inside the wordpress container.
+#       3. Recommended docker way, edit wordpress service in docker-compose.yml,
+#          extra_hosts:
+#            - "example.com:Nginx_LAN_IP"
+###################################################################################################################
+if [[ "${NPP_HACK_HOST}" -eq 1 ]]; then
+    # Create array
+    mapfile -t ip_array < <(resolve_host host.docker.internal)
+
+    # Create temporary file
+    TEMP_HOSTS="$(mktemp /tmp/hosts.XXXXXX)"
     HOSTS="/etc/hosts"
 
-    # Check if the Nginx static IP defined
-    if ! grep -q "${IP}" "${HOSTS}"; then
-        # Map localhost to Nginx Static IP
-        echo -e "${LINE}\n$(cat ${HOSTS})" > /tmp/hosts.new
-        cat /tmp/hosts.new > "${HOSTS}"
-        rm -f /tmp/hosts.new
-        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Mapped '${COLOR_LIGHT_CYAN}${NPP_HTTP_HOST}${COLOR_RESET}' to Nginx IP '${COLOR_LIGHT_CYAN}${IP}${COLOR_RESET}' in ${COLOR_LIGHT_CYAN}${HOSTS}${COLOR_RESET}."
-    else
-        echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Mapping already exists: '${COLOR_LIGHT_CYAN}${NPP_HTTP_HOST}${COLOR_RESET}' -> '${COLOR_LIGHT_CYAN}${IP}${COLOR_RESET}'."
+    # Hack /etc/hosts kindly, not make container upset
+    # Map to host.docker.internal
+    if (( ${#ip_array[@]} )); then
+        for IP in "${ip_array[@]}"; do
+            echo "${IP} ${NPP_HTTP_HOST}" >> "${TEMP_HOSTS}"
+        done
+
+        cat "${HOSTS}" >> "${TEMP_HOSTS}"
+        cat "${TEMP_HOSTS}" > "${HOSTS}"
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} ${COLOR_RED}Hacked!${COLOR_RESET} Mapped ${COLOR_LIGHT_CYAN}${NPP_HTTP_HOST}${COLOR_RESET} to host.docker.internal ${COLOR_LIGHT_CYAN}${ip_array[@]}${COLOR_RESET} in ${COLOR_LIGHT_CYAN}${HOSTS}${COLOR_RESET}."
     fi
 fi
-#######################################################################
+####################################################################################################################
 
 # Check ownership of webroot for consistency
 check_ownership() {
