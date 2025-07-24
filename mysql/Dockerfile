@@ -6,7 +6,7 @@
 # ----------------------------------------------------------------------------     #
 
 # Here the magic, the rest of it is ordinary
-FROM mysql:8.0.42-bookworm
+FROM mysql:8.0.43-bookworm
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
