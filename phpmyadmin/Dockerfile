@@ -6,7 +6,7 @@
 # ----------------------------------------------------------------------------     #
 
 # Here the magic, the rest of it is ordinary
-FROM phpmyadmin:5.2.2-apache
+FROM phpmyadmin:5.2.3-apache
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
