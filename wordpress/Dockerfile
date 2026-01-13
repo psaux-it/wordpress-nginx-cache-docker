@@ -71,7 +71,7 @@ RUN curl -LO ${WP_CLI_URL} \
 RUN curl -LO ${FUSE_URL} && \
     curl -LO ${FUSE_SIG_URL} && \
     tar xzf fuse-${LIBFUSE_VERSION}.tar.gz && \
-    signify-openbsd -V -m fuse-${LIBFUSE_VERSION}.tar.gz -p fuse-${LIBFUSE_VERSION}/signify/fuse-3.16.pub && \
+    signify-openbsd -V -m fuse-${LIBFUSE_VERSION}.tar.gz -p fuse-${LIBFUSE_VERSION}/signify/fuse-3.18.pub && \
     cd fuse-${LIBFUSE_VERSION} && \
     mkdir build && cd build && \
     meson setup .. && \
