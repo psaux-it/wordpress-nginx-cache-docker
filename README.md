@@ -11,14 +11,14 @@ https://github.com/user-attachments/assets/5a946953-c7f1-4d44-a8ac-3487018d7114
 
 ## ✨ Features
 
-- ✅ **WordPress** (6.7.2) with **PHP-FPM** (8.2)
+- ✅ **WordPress** (6.9.0) with **FPM** (8.4)
 - ✅ **MySQL** (8) for database management
-- ✅ **FastCGI** cache ready with **Nginx** (1.27.4)
+- ✅ **FastCGI** cache ready with **Nginx** (1.29.1)
 - ✅ **WP-CLI** ready for plugin and theme installations (check **.env**)
-- ✅ **phpMyAdmin** (5.2.2) ready
+- ✅ **phpMyAdmin** (5.2.3) ready
 - ✅ Includes all dependencies required for the **NPP plugin**
 - ✅ Isolated and secure **PHP process owner** for enhanced security and performance
-- ✅ Built with **bindfs** (1.17.7) + **fuse3** (1.16.2) for FUSE-based mounting of **Nginx Cache Path**
+- ✅ Built with **bindfs** (1.18.3) + **fuse3** (3.18.1) for FUSE-based mounting of **Nginx Cache Path**
 - ✅ Installed a wide range of **PHP extensions**
 - ✅ Easily switch between the **stable** release and the **bleeding-edge** version of the **NPP**
 - ✅ All containers powered by **Debian 12** for a stable, consistent environment
