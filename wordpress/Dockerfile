@@ -6,15 +6,15 @@
 # ----------------------------------------------------------------------------     #
 
 # Here the magic, the rest of it is ordinary
-FROM wordpress:6.9.0-php8.2-fpm
+FROM wordpress:6.9.0-php8.4-fpm
 
 # Set some ugly stuff
 ENV LANG=C.UTF-8 \
     DEBIAN_FRONTEND=noninteractive
 
 # Set package versions
-ENV LIBFUSE_VERSION=3.16.2 \
-    BINDFS_VERSION=1.17.7
+ENV LIBFUSE_VERSION=3.18.1 \
+    BINDFS_VERSION=1.18.3
 
 # Set package URL's
 ENV FUSE_URL="https://github.com/libfuse/libfuse/releases/download/fuse-${LIBFUSE_VERSION}/fuse-${LIBFUSE_VERSION}.tar.gz" \
