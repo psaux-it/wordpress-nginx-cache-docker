@@ -93,7 +93,7 @@ echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Permissions fixed succ
 echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Failed to fix permissions!"
 
 # Wait for the 'wordpress-db' to be ready
-until mysql -h wordpress-db -u"${WORDPRESS_DB_USER}" -p"${WORDPRESS_DB_PASSWORD}" "${WORDPRESS_DB_NAME}" -e "SELECT 1" > /dev/null 2>&1; do
+until mysql --skip-ssl -h wordpress-db -u"${WORDPRESS_DB_USER}" -p"${WORDPRESS_DB_PASSWORD}" "${WORDPRESS_DB_NAME}" -e "SELECT 1" > /dev/null 2>&1; do
     echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP:${COLOR_RESET} The ${COLOR_LIGHT_CYAN}MySQL database${COLOR_RESET} is not available yet. Retrying..."
     sleep 6
 done
