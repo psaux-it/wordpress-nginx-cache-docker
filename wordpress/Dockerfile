@@ -14,7 +14,7 @@ ENV LANG=C.UTF-8 \
 
 # Set package versions
 ENV LIBFUSE_VERSION=3.18.1 \
-    BINDFS_VERSION=1.18.3
+    BINDFS_VERSION=1.18.4
 
 # Set package URL's
 ENV FUSE_URL="https://github.com/libfuse/libfuse/releases/download/fuse-${LIBFUSE_VERSION}/fuse-${LIBFUSE_VERSION}.tar.gz" \
