@@ -36,9 +36,14 @@ COLOR_BLACK='\033[0;30m'
 COLOR_LIGHT_CYAN='\033[0;96m'
 
 # Fix permissions for consistency
-chown -R root:root /etc/mysql/conf.d &&
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DB:${COLOR_RESET} Permissions fixed successfully!" ||
-echo -e "${COLOR_RED}${COLOR_BOLD}NPP-DB:${COLOR_RESET} Failed to fix permissions!"
+if chown -R root:root /etc/mysql/conf.d; then
+    if [[ -f /etc/mysql/conf.d/50-npp-server.cnf ]]; then
+        chmod 644 /etc/mysql/conf.d/50-npp-server.cnf
+    fi
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-DB:${COLOR_RESET} Permissions fixed successfully!"
+else
+    echo -e "${COLOR_RED}${COLOR_BOLD}NPP-DB:${COLOR_RESET} Failed to fix permissions!"
+fi
 
 # Start mysqld
 exec /usr/local/bin/docker-entrypoint.sh "$@"
