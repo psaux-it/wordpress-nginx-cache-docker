@@ -61,6 +61,29 @@ else
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} PHP process owner user ${COLOR_LIGHT_CYAN}${NPP_USER}${COLOR_RESET} is already exists! Skipping..."
 fi
 
+# Configure safexec based on SAFEXEC_ENABLED env var (default: 1)
+# Set SAFEXEC_ENABLED=0 in .env to disable safexec at runtime without rebuilding
+_safexec_enabled="${SAFEXEC_ENABLED:-1}"
+_safexec_bin="$(command -v safexec 2>/dev/null || true)"
+ 
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Configuring ${COLOR_LIGHT_CYAN}safexec${COLOR_RESET} (SAFEXEC_ENABLED=${_safexec_enabled})..."
+ 
+if [[ -z "${_safexec_bin}" ]]; then
+    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP:${COLOR_RESET} ${COLOR_LIGHT_CYAN}safexec${COLOR_RESET} is not installed — skipping safexec configuration."
+elif [[ "${_safexec_enabled}" == "1" ]]; then
+    chmod +x "${_safexec_bin}"
+    # Ensure safexec is owned by root and has the setuid bit so the npp user can invoke it
+    chown root:root "${_safexec_bin}"
+    chmod u+s    "${_safexec_bin}"
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} ${COLOR_LIGHT_CYAN}safexec${COLOR_RESET} is ${COLOR_GREEN}enabled${COLOR_RESET} at ${COLOR_CYAN}${_safexec_bin}${COLOR_RESET} (setuid root, executable)."
+else
+    # Remove the executable bit so PHP-FPM/NPP cannot invoke safexec,
+    # while keeping the binary present for a quick re-enable via restart
+    chmod -x "${_safexec_bin}"
+    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP:${COLOR_RESET} ${COLOR_LIGHT_CYAN}safexec${COLOR_RESET} is ${COLOR_YELLOW}disabled${COLOR_RESET} — binary present but not executable."
+fi
+unset _safexec_enabled _safexec_bin
+
 # Ensure the mount directory for bindfs exists
 if [[ ! -d "${MOUNT_DIR}" ]]; then
     mkdir -p "${MOUNT_DIR}"
