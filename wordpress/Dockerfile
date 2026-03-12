@@ -15,7 +15,7 @@ ENV LANG=C.UTF-8 \
 # Set package versions
 ENV LIBFUSE_VERSION=3.18.1 \
     BINDFS_VERSION=1.18.4 \
-    SAFEXEC_VERSION=1.9.2-1 \
+    SAFEXEC_VERSION=1.9.3-1 \
     SAFEXEC_RELEASE_TAG=v2.1.4
 
 # Set package URL's
