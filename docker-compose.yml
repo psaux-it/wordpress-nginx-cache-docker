@@ -7,6 +7,7 @@ services:
       dockerfile: wordpress/Dockerfile
     image: ghcr.io/psaux-it/wordpress-nginx-cache-docker/wordpress:latest
     container_name: wordpress-fpm
+    tty: true
     expose:
       - "9001"
     env_file:
