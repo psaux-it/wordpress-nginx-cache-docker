@@ -14,14 +14,17 @@ ENV LANG=C.UTF-8 \
 
 # Set package versions
 ENV LIBFUSE_VERSION=3.18.1 \
-    BINDFS_VERSION=1.18.4
+    BINDFS_VERSION=1.18.4 \
+    SAFEXEC_VERSION=1.9.2-1 \
+    SAFEXEC_RELEASE_TAG=v2.1.4
 
 # Set package URL's
 ENV FUSE_URL="https://github.com/libfuse/libfuse/releases/download/fuse-${LIBFUSE_VERSION}/fuse-${LIBFUSE_VERSION}.tar.gz" \
     FUSE_SIG_URL="https://github.com/libfuse/libfuse/releases/download/fuse-${LIBFUSE_VERSION}/fuse-${LIBFUSE_VERSION}.tar.gz.sig" \
     BINDFS_URL="https://github.com/mpartel/bindfs/archive/refs/tags/${BINDFS_VERSION}.tar.gz" \
     WP_CLI_URL="https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar" \
-    PHP_EXT_URL="https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions"
+    PHP_EXT_URL="https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions" \
+    SAFEXEC_RELEASE_URL="https://github.com/psaux-it/nginx-fastcgi-cache-purge-and-preload/releases/download"
 
 # Set PHP extensions
 ENV PHP_EXTENSIONS="bz2 calendar ctype curl dom iconv json mbstring pdo_pgsql readline simplexml \
@@ -102,6 +105,22 @@ RUN curl -LO ${BINDFS_URL} && \
 # Install PHP extensions
 ADD --chmod=0755 ${PHP_EXT_URL} /usr/local/bin/
 RUN install-php-extensions ${PHP_EXTENSIONS}
+
+# Install safexec
+ARG INSTALL_SAFEXEC=true
+RUN if [ "${INSTALL_SAFEXEC}" = "true" ]; then \
+        ARCH=$(dpkg --print-architecture) && \
+        BASE_URL="${SAFEXEC_RELEASE_URL}/${SAFEXEC_RELEASE_TAG}" && \
+        DEB="safexec_${SAFEXEC_VERSION}_${ARCH}.deb" && \
+        wget -q "${BASE_URL}/SHA256SUMS"    -O /tmp/safexec-SHA256SUMS && \
+        wget -q "${BASE_URL}/${DEB}"        -O "/tmp/${DEB}" && \
+        cd /tmp && sha256sum -c safexec-SHA256SUMS --ignore-missing && \
+        apt-get install -y "/tmp/${DEB}" && \
+        rm -f "/tmp/${DEB}" /tmp/safexec-SHA256SUMS && \
+        echo "safexec $(safexec --version 2>&1 || true) installed successfully"; \
+    else \
+        echo "INSTALL_SAFEXEC=false — skipping safexec installation"; \
+    fi
 
 # Copy the scripts into the container
 COPY wordpress/entrypoint-wp.sh /entrypoint-wp.sh
