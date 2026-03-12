@@ -126,6 +126,9 @@ RUN if [ "${INSTALL_SAFEXEC}" = "true" ]; then \
 COPY wordpress/entrypoint-wp.sh /entrypoint-wp.sh
 COPY wordpress/wp-post.sh /scripts/wp-post.sh
 
+# Normalize line endings
+RUN dos2unix /entrypoint-wp.sh /scripts/wp-post.sh
+
 # Make sure scripts are executable
 RUN chmod +x /entrypoint-wp.sh
 RUN chmod +x /scripts/wp-post.sh
