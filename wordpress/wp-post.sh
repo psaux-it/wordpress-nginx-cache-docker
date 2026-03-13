@@ -406,6 +406,19 @@ if [[ "${NPP_EDGE}" -eq 1 ]]; then
 
         # Adjust ownership (ensure NPP_USER is set in the environment)
         chown -R "${NPP_USER}":"${NPP_USER}" "${PLUGIN_DIR}"
+
+        # Deactivate then re-activate so register_activation_hook fires with the
+        # new files on disk. Clear the three keys sourced from reject_regex.txt
+        # first so activation rewrites them fresh. All other settings survive.
+        echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-EDGE:${COLOR_RESET} Refreshing file-sourced defaults from new ${COLOR_CYAN}reject_regex.txt${COLOR_RESET}..."
+        su -m -c "wp plugin deactivate \"${PLUGIN_NAME}\" --quiet" "${NPP_USER}" >/dev/null 2>&1 || true
+        su -m -c "wp option patch delete nginx_cache_settings nginx_cache_reject_extension" "${NPP_USER}" >/dev/null 2>&1 || true
+        su -m -c "wp option patch delete nginx_cache_settings nginx_cache_reject_regex"     "${NPP_USER}" >/dev/null 2>&1 || true
+        su -m -c "wp option patch delete nginx_cache_settings nginx_cache_key_custom_regex" "${NPP_USER}" >/dev/null 2>&1 || true
+        su -m -c "wp plugin activate \"${PLUGIN_NAME}\" --quiet" "${NPP_USER}" >/dev/null 2>&1 && \
+            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-EDGE:${COLOR_RESET} Plugin re-activated — defaults refreshed from new files." || \
+            echo -e "${COLOR_RED}${COLOR_BOLD}NPP-EDGE:${COLOR_RESET} Plugin re-activation failed. Defaults may be stale."
+
         echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-EDGE:${COLOR_RESET} Deployed build ${COLOR_CYAN}${TARGET_BRANCH}${COLOR_RESET} with (commit ${COLOR_CYAN}${CLONED_COMMIT_HASH}${COLOR_RESET})."
         echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-EDGE:${COLOR_RESET} ${COLOR_LIGHT_CYAN}######################${COLOR_RESET}"
     else
