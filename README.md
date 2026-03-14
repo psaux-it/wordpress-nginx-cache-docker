@@ -11,18 +11,55 @@ https://github.com/user-attachments/assets/5a946953-c7f1-4d44-a8ac-3487018d7114
 
 ## ✨ Features
 
-- ✅ **WordPress** (6.9.0) with **FPM** (8.4)
+- ✅ **WordPress** (6.9.4) with **FPM** (8.4)
 - ✅ **MySQL** (8) for database management
 - ✅ **FastCGI** cache ready with **Nginx** (1.29.1)
 - ✅ **WP-CLI** ready for plugin and theme installations (check **.env**)
 - ✅ **phpMyAdmin** (5.2.3) ready
 - ✅ Includes all dependencies required for the **NPP plugin**
 - ✅ Isolated and secure **PHP process owner** for enhanced security and performance
-- ✅ Built with **bindfs** (1.18.3) + **fuse3** (3.18.1) for FUSE-based mounting of **Nginx Cache Path**
+- ✅ Built with **bindfs** (1.18.4) + **fuse3** (3.18.1) for FUSE-based mounting of **Nginx Cache Path**
 - ✅ Installed a wide range of **PHP extensions**
 - ✅ Easily switch between the **stable** release and the **bleeding-edge** version of the **NPP**
 - ✅ All containers powered by **Debian 12** for a stable, consistent environment
 - ✅ Compatible with both Windows **WSL** and Linux Hosts
+- ✅ **safexec** installed for hardened, privilege-dropped cache preload execution
+- ✅ **mitmproxy** sidecar for full NPP plugin feature testing including Proxy Preload
+
+## 🔒 Security & Proxy Features
+
+### safexec (Default: Enabled)
+
+**safexec** is a setuid-root binary that drops privileges before executing shell commands. It ensures that `wget`-based cache preload processes run as an isolated user instead of the PHP-FPM process owner, hardening the environment against privilege escalation.
+```bash
+NPP_SAFEXEC_ENABLED=1  # Enable (default)
+NPP_SAFEXEC_ENABLED=0  # Disable at runtime without rebuilding
+```
+
+> safexec is installed at build time. Set `INSTALL_SAFEXEC=false` as a build arg to skip installation entirely.
+
+---
+
+### mitmproxy — Full Plugin Feature Testing
+
+This stack includes a dedicated **mitmproxy** sidecar container (`npp-mitm`) so you can **test the complete NPP plugin feature set**, including the **Proxy Preload** feature, end-to-end in a local Docker environment.
+
+**Toggle at runtime:**
+```bash
+NPP_MITM_ENABLED=1  # Enable (default)
+NPP_MITM_ENABLED=0  # Disable
+```
+
+**NPP Plugin settings are auto-configured via WP-CLI on first startup:**
+
+| Setting | Value |
+|---|---|
+| Nginx Cache Path | `/var/cache/nginx-npp` (FUSE mount) |
+| Proxy Host | `npp-mitm` |
+| Proxy Port | `3434` |
+
+> These are set only when still on default placeholder values. User changes via the plugin UI are preserved across restarts.
+
 
 ## 🔑 Environment Variables
 
