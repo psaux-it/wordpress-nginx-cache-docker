@@ -16,5 +16,6 @@ CMD ["mitmdump", \
      "--listen-port", "3434", \
      "--set", "ssl_insecure=true", \
      "--set", "block_global=false", \
+     "--set", "upstream_cert=false", \
      "--no-http2", \
      "-s", "/home/mitmproxy/npp_addon.py"]
