@@ -188,16 +188,14 @@ services:
           memory: "1GB"
 
   mitmproxy:
-    image: mitmproxy/mitmproxy
+    build:
+      context: .
+      dockerfile: mitmproxy/Dockerfile
+    image: ghcr.io/psaux-it/wordpress-nginx-cache-docker/mitmproxy:latest
     container_name: npp-mitm
     restart: unless-stopped
-    command: >
-      mitmdump
-      --mode regular
-      --listen-host 0.0.0.0
-      --listen-port 3434
-      --set block_global=false
-      --allow-hosts ${NPP_HTTP_HOST}
+    depends_on:
+      - nginx
     networks:
       npp_network:
 
