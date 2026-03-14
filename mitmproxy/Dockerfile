@@ -9,6 +9,7 @@ FROM mitmproxy/mitmproxy:latest
 
 # Copy NPP addon script
 COPY mitmproxy/npp_addon.py /home/mitmproxy/npp_addon.py
+RUN chown mitmproxy:mitmproxy /home/mitmproxy/npp_addon.py
 
 CMD ["mitmdump", \
      "--mode", "regular", \
