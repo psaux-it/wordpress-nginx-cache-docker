@@ -49,6 +49,7 @@ services:
       - NPP_DEV_GITHUB_REPO=${NPP_DEV_GITHUB_REPO_}
       - MOUNT_DIR=${MOUNT_DIR_}
       - SAFEXEC_ENABLED=${NPP_SAFEXEC_ENABLED_}
+      - NPP_MITM_ENABLED=${NPP_MITM_ENABLED_}
       - WORDPRESS_SITE_URL=${WORDPRESS_SITE_URL_}
       - WORDPRESS_SITE_TITLE=${WORDPRESS_SITE_TITLE_}
       - WORDPRESS_ADMIN_USER=${WORDPRESS_ADMIN_USER_}
@@ -185,6 +186,20 @@ services:
         reservations:
           cpus: "0.5"
           memory: "1GB"
+
+  mitmproxy:
+    image: mitmproxy/mitmproxy
+    container_name: npp-mitm
+    restart: unless-stopped
+    command: >
+      mitmdump
+      --mode regular
+      --listen-host 0.0.0.0
+      --listen-port 3434
+      --set block_global=false
+      --allow-hosts ${NPP_HTTP_HOST}
+    networks:
+      npp_network:
 
 volumes:
   wordpress-db:
