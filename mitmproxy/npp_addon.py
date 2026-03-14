@@ -7,10 +7,5 @@ class NPPAddon:
         if flow.request.host == 'localhost':
             flow.request.host = 'nginx'
 
-    def request(self, flow: http.HTTPFlow) -> None:
-        # Rewrite localhost → nginx for direct requests
-        if flow.request.pretty_host == 'localhost':
-            flow.request.host = 'nginx'
-
 
 addons = [NPPAddon()]
