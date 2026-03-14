@@ -427,6 +427,33 @@ if [[ "${NPP_EDGE}" -eq 1 ]]; then
     fi
 fi
 
+# Set cache path if still on default placeholder
+_current_path=$(su -m -c "wp option pluck nginx_cache_settings nginx_cache_path --path=\"${NPP_WEB_ROOT}\"" "${NPP_USER}" 2>/dev/null || true)
+if [[ -z "${_current_path}" || "${_current_path}" == "/dev/shm/change-me-now" ]]; then
+    su -m -c "wp option patch update nginx_cache_settings nginx_cache_path \"${MOUNT_DIR}\" --path=\"${NPP_WEB_ROOT}\"" "${NPP_USER}" >/dev/null 2>&1 && \
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Cache path set to ${COLOR_CYAN}${MOUNT_DIR}${COLOR_RESET}." || \
+        echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Failed to set cache path."
+else
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Cache path already configured: ${COLOR_CYAN}${_current_path}${COLOR_RESET}. Skipping."
+fi
+unset _current_path
+
+# Set proxy if enabled and still on default placeholder
+if [[ "${NPP_MITM_ENABLED:-0}" -eq 1 ]]; then
+    _current_proxy=$(su -m -c "wp option pluck nginx_cache_settings nginx_cache_preload_proxy_host --path=\"${NPP_WEB_ROOT}\"" "${NPP_USER}" 2>/dev/null || true)
+    if [[ -z "${_current_proxy}" || "${_current_proxy}" == "127.0.0.1" ]]; then
+        su -m -c "wp option patch update nginx_cache_settings nginx_cache_preload_proxy_host \"npp-mitm\" --path=\"${NPP_WEB_ROOT}\"" "${NPP_USER}" >/dev/null 2>&1 && \
+            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Proxy host set to ${COLOR_CYAN}npp-mitm${COLOR_RESET}." || \
+            echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Failed to set proxy host."
+        su -m -c "wp option patch update nginx_cache_settings nginx_cache_preload_proxy_port \"3434\" --path=\"${NPP_WEB_ROOT}\"" "${NPP_USER}" >/dev/null 2>&1 && \
+            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Proxy port set to ${COLOR_CYAN}3434${COLOR_RESET}." || \
+            echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Failed to set proxy port."
+    else
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Proxy already configured: ${COLOR_CYAN}${_current_proxy}${COLOR_RESET}. Skipping."
+    fi
+    unset _current_proxy
+fi
+
 # Listen on dummy port for 'nginx' container health check
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Starting to listen on dummy port ${COLOR_CYAN}9999${COLOR_RESET}..."
 if ! nc -zv 127.0.0.1 9999 2>/dev/null; then
