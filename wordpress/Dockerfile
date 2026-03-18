@@ -71,7 +71,8 @@ RUN curl -LO ${WP_CLI_URL} \
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1084458
 
 # 1) First compile and install 'bindfs' dependencies
-RUN curl -LO ${FUSE_URL} && \
+RUN cd /tmp && \
+    curl -LO ${FUSE_URL} && \
     curl -LO ${FUSE_SIG_URL} && \
     tar xzf fuse-${LIBFUSE_VERSION}.tar.gz && \
     signify-openbsd -V -m fuse-${LIBFUSE_VERSION}.tar.gz -p fuse-${LIBFUSE_VERSION}/signify/fuse-3.18.pub && \
@@ -88,18 +89,19 @@ RUN curl -LO ${FUSE_URL} && \
     meson setup --reconfigure ../ && \
     ninja && \
     ninja install && \
-    cd .. && \
-    rm -rf fuse-${LIBFUSE_VERSION} fuse-${LIBFUSE_VERSION}.tar.gz
+    cd /tmp && \
+    rm -rf fuse-${LIBFUSE_VERSION} fuse-${LIBFUSE_VERSION}.tar.gz fuse-${LIBFUSE_VERSION}.tar.gz.sig
 
 # 2) Now compile and Install 'bindfs'
-RUN curl -LO ${BINDFS_URL} && \
+RUN cd /tmp && \
+    curl -LO ${BINDFS_URL} && \
     tar xzf ${BINDFS_VERSION}.tar.gz && \
     cd bindfs-${BINDFS_VERSION} && \
     ./autogen.sh && \
     ./configure && \
     make && \
     make install && \
-    cd .. && \
+    cd /tmp && \
     rm -rf bindfs-${BINDFS_VERSION} ${BINDFS_VERSION}.tar.gz
 
 # Install PHP extensions
