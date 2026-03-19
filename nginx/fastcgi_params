@@ -30,3 +30,4 @@ fastcgi_param  PATH_INFO               $fastcgi_path_info;
 fastcgi_param  PATH_TRANSLATED         $document_root$fastcgi_path_info;
 fastcgi_param  HTTP_HOST               $host;
 fastcgi_param  HTTP_X_FORWARDED_PROTO  $scheme;
+fastcgi_param  HTTP_ACCEPT_ENCODING    "";
