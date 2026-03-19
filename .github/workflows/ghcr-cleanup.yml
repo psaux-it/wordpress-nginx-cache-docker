@@ -1,0 +1,46 @@
+name: Cleanup untagged GHCR images
+
+on:
+  schedule:
+    - cron: '30 1 * * 0'  # every Sunday at 1:30am
+  workflow_dispatch:
+
+jobs:
+  ghcr-cleanup:
+    name: ghcr cleanup action
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    concurrency:
+      group: cleanup-images  # never run in parallel per docs recommendation
+
+    steps:
+      # STEP 1: dry-run first
+      - name: Dry run - show what would be deleted
+        uses: dataaxiom/ghcr-cleanup-action@v1
+        with:
+          packages: >-
+            wordpress-nginx-cache-docker/wordpress,
+            wordpress-nginx-cache-docker/mysql,
+            wordpress-nginx-cache-docker/nginx,
+            wordpress-nginx-cache-docker/phpmyadmin,
+            wordpress-nginx-cache-docker/mitmproxy
+          delete-untagged: true
+          dry-run: true
+          validate: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # STEP 2:
+      # - name: Delete untagged images
+      #   uses: dataaxiom/ghcr-cleanup-action@v1
+      #   with:
+      #     packages: >-
+      #       wordpress-nginx-cache-docker/wordpress,
+      #       wordpress-nginx-cache-docker/mysql,
+      #       wordpress-nginx-cache-docker/nginx,
+      #       wordpress-nginx-cache-docker/phpmyadmin,
+      #       wordpress-nginx-cache-docker/mitmproxy
+      #     delete-untagged: true
+      #     dry-run: false
+      #     validate: true
+      #     token: ${{ secrets.GITHUB_TOKEN }}
