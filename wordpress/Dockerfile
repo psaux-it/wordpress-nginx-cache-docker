@@ -52,6 +52,7 @@ RUN apt-get update && apt-get install -y \
     # Install dev deploy dependencies
     git \
     dos2unix \
+    rsync \
     # Install build time dependencies for 'bindfs' 
     build-essential \
     automake \
