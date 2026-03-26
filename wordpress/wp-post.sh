@@ -383,6 +383,7 @@ if [[ "${NPP_EDGE}" -eq 1 ]]; then
         # Strip non-production files/folders from the clone before deploying.
         rm -rf \
             "${TMP_CLONE_DIR:?}/.git" \
+            "${TMP_CLONE_DIR:?}/.github" \
             "${TMP_CLONE_DIR:?}/misc" \
             "${TMP_CLONE_DIR:?}/safexec" \
             "${TMP_CLONE_DIR:?}/tests"
