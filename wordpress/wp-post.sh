@@ -373,24 +373,35 @@ if [[ "${NPP_EDGE}" -eq 1 ]]; then
     if [[ "${need_update}" -eq 1 ]]; then
         echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-EDGE:${COLOR_RESET} Deploying development build ${COLOR_CYAN}${LATEST_VERSION}${COLOR_RESET}..."
 
-        # Remove the current plugin directory (if it exists)
-        rm -rf "${PLUGIN_DIR:?}"
-
         # Clone the target branch into a temporary directory
         mkdir -p "${TMP_CLONE_DIR:?}" && cd "${TMP_CLONE_DIR:?}"
         git clone --branch "${TARGET_BRANCH:?}" "${GITHUB_REPO:?}" . >/dev/null 2>&1
 
-        # Fix line-ending issues
-        find "${TMP_CLONE_DIR:?}" -type f -exec dos2unix {} + >/dev/null 2>&1
-
         # Retrieve the commit hash from the clone
         CLONED_COMMIT_HASH=$(git rev-parse --short HEAD)
 
-        # Move the cloned files to the plugin directory and clean up
-        mv "${TMP_CLONE_DIR:?}" "${PLUGIN_DIR:?}"
-        rm -rf "${TMP_CLONE_DIR:?}" >/dev/null 2>&1
-        rm -rf "${PLUGIN_DIR:?}/.git" >/dev/null 2>&1
-        rm -f "${PLUGIN_DIR:?}/README.md" "${PLUGIN_DIR:?}/version" >/dev/null 2>&1
+        # Strip non-production files/folders from the clone before deploying.
+        rm -rf \
+            "${TMP_CLONE_DIR:?}/.git" \
+            "${TMP_CLONE_DIR:?}/misc" \
+            "${TMP_CLONE_DIR:?}/safexec" \
+            "${TMP_CLONE_DIR:?}/tests"
+        rm -f \
+            "${TMP_CLONE_DIR:?}/README.md" \
+            "${TMP_CLONE_DIR:?}/version" \
+            "${TMP_CLONE_DIR:?}/CONTRIBUTING.md" \
+            "${TMP_CLONE_DIR:?}/SECURITY.md" \
+            "${TMP_CLONE_DIR:?}/LICENSE" \
+            "${TMP_CLONE_DIR:?}/wordfence-vendor.txt"
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-EDGE:${COLOR_RESET} Non-production files stripped from staging dir."
+
+        # Fix line-ending issues
+        find "${TMP_CLONE_DIR:?}" -type f -exec dos2unix {} + >/dev/null 2>&1
+ 
+        # Sync clean staging dir → live plugin dir.
+        mkdir -p "${PLUGIN_DIR:?}"
+        rsync -a --delete "${TMP_CLONE_DIR:?}/" "${PLUGIN_DIR:?}/"
+        rm -rf "${TMP_CLONE_DIR:?}"
 
         # Update the plugin header: Version and Latest Commit
         if [[ -f "${PLUGIN_FILE}" ]]; then
