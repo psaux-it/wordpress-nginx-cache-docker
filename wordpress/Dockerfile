@@ -43,6 +43,7 @@ RUN apt-get update && apt-get install -y \
     coreutils \
     wget \
     cpulimit \
+    ripgrep \
     # Install dependencies for service health checks
     mariadb-client \
     netcat-traditional \
