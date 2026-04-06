@@ -43,3 +43,14 @@ updates:
       - dependency-name: "phpmyadmin"
     commit-message:
       prefix: "[npp-bot]"
+
+  - package-ecosystem: "docker"
+    directory: "/mitmproxy"
+    schedule:
+      interval: "daily"
+    labels:
+      - "automerge"
+    allow:
+      - dependency-name: "mitmproxy"
+    commit-message:
+      prefix: "[npp-bot]"
