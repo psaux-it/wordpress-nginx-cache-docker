@@ -5,7 +5,7 @@
 #          Rewrites localhost → nginx container for correct routing inside Docker. #
 # ----------------------------------------------------------------------------     #
 
-FROM mitmproxy/mitmproxy:latest
+FROM mitmproxy/mitmproxy:12.2.1
 
 # Copy NPP addon script
 COPY mitmproxy/npp_addon.py /home/mitmproxy/npp_addon.py
