@@ -6,11 +6,11 @@
 # ----------------------------------------------------------------------------     #
 
 # Here the magic, the rest of it is ordinary
-FROM mysql:8.0.45-bookworm
+FROM mysql:8.4.8
 
 # Install necessary packages
-RUN apt-get update && apt-get install -y \
-    procps
+RUN microdnf install -y procps-ng && \
+    microdnf clean all
 
 # Copy the entrypoint script into the container
 COPY mysql/entrypoint-sql.sh /entrypoint-sql.sh
