@@ -173,6 +173,7 @@ services:
       - NGINX_WEB_USER=${NGINX_WEB_USER_}
       - NPP_HTTP_HOST=${NPP_HTTP_HOST}
       - MOUNT_DIR=${MOUNT_DIR_}
+      - NPP_NGINX_CACHE_PATH=${NPP_NGINX_CACHE_PATH_}
     networks:
       npp_network:
     mem_limit: "1.5GB"
