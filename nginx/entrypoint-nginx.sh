@@ -72,7 +72,8 @@ for var in \
     NPP_WEB_ROOT \
     NGINX_WEB_USER \
     MOUNT_DIR \
-    NPP_HTTP_HOST; do
+    NPP_HTTP_HOST \
+    NPP_NGINX_CACHE_PATH; do
     if [[ -z "${!var:-}" ]]; then
         echo -e "${COLOR_RED}${COLOR_BOLD}NPP-NGINX-FATAL:${COLOR_RESET} Missing required environment variable: ${COLOR_LIGHT_CYAN}${var}${COLOR_RESET} - ${COLOR_RED}Exiting...${COLOR_RESET}"
         exit 1
@@ -102,6 +103,10 @@ chown -R root:root /etc/nginx &&
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Permissions fixed successfully!" ||
 echo -e "${COLOR_RED}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Failed to fix permissions!"
 
+chown -R www-data:www-data "${NPP_NGINX_CACHE_PATH}" && \
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Cache path ${COLOR_LIGHT_CYAN}${NPP_NGINX_CACHE_PATH}${COLOR_RESET} ownership set to ${COLOR_CYAN}www-data:www-data${COLOR_RESET}." || \
+echo -e "${COLOR_RED}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Failed to set cache path ownership!"
+
 sleep 3
 
 # Congratulatory Header
@@ -129,13 +134,6 @@ echo -e "\n${COLOR_YELLOW}━━━━━━━━━━━━━━━━━━
 # Default Nginx cache path
 echo -e "\n${COLOR_GREEN}${COLOR_BOLD}💾 Nginx Cache Path:${COLOR_RESET}"
 echo -e "${COLOR_LIGHT_CYAN}Path: ${COLOR_RESET}${COLOR_BOLD}${MOUNT_DIR}${COLOR_RESET}"
-
-# Separator for author message
-echo -e "\n${COLOR_YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${COLOR_RESET}"
-
-# Universal Author messaege
-echo -e "\n${COLOR_RED}${COLOR_BOLD}☪︎${COLOR_RESET} ${COLOR_GREEN}${COLOR_BOLD}Author Message:${COLOR_RESET}"
-echo -e "${COLOR_LIGHT_CYAN}Message: ${COLOR_RESET}${COLOR_BOLD}1.f3 e5 2.g4 Qh4# ~checkmate${COLOR_RESET}"
 
 # Final separator
 echo -e "\n${COLOR_YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${COLOR_RESET}"
