@@ -208,7 +208,7 @@ volumes:
     driver_opts:
       type: tmpfs
       device: tmpfs
-      o: size=500m
+      o: size=1g
 
 networks:
   npp_network:
