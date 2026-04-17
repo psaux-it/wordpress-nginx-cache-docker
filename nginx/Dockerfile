@@ -6,7 +6,7 @@
 # ----------------------------------------------------------------------------     #
 
 # ── Stage 1: Build ngx_cache_purge .deb via official pkg-oss / build_module.sh ──
-ARG NGINX_FROM_IMAGE=nginx:1.29.7-trixie
+ARG NGINX_FROM_IMAGE=nginx:1.30.0-trixie
 FROM ${NGINX_FROM_IMAGE} AS builder
 
 ARG NGX_CACHE_PURGE_VERSION=2.5.6
