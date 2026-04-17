@@ -13,7 +13,7 @@ https://github.com/user-attachments/assets/5a946953-c7f1-4d44-a8ac-3487018d7114
 
 - ✅ **WordPress** (6.9.4) with **FPM** (8.4)
 - ✅ **MySQL** (9) for database management
-- ✅ **FastCGI** cache ready with **Nginx** (1.29.7 + ngx_cache_purge v2.5.6)
+- ✅ **FastCGI** cache ready with **Nginx** (1.30.0 + ngx_cache_purge v2.5.6)
 - ✅ **WP-CLI** ready for plugin and theme installations (check **.env**)
 - ✅ **phpMyAdmin** (5.2.3) ready
 - ✅ Includes all dependencies required for the **NPP plugin**
