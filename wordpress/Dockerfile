@@ -16,7 +16,8 @@ ENV LANG=C.UTF-8 \
 ENV LIBFUSE_VERSION=3.18.2 \
     BINDFS_VERSION=1.18.4 \
     SAFEXEC_VERSION=1.9.5-1 \
-    SAFEXEC_RELEASE_TAG=v2.1.5
+    SAFEXEC_RELEASE_TAG=v2.1.5 \
+    RIPGREP_VERSION=15.1.0
 
 # Set package URL's
 ENV FUSE_URL="https://github.com/libfuse/libfuse/releases/download/fuse-${LIBFUSE_VERSION}/fuse-${LIBFUSE_VERSION}.tar.gz" \
@@ -24,7 +25,8 @@ ENV FUSE_URL="https://github.com/libfuse/libfuse/releases/download/fuse-${LIBFUS
     BINDFS_URL="https://github.com/mpartel/bindfs/archive/refs/tags/${BINDFS_VERSION}.tar.gz" \
     WP_CLI_URL="https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar" \
     PHP_EXT_URL="https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions" \
-    SAFEXEC_RELEASE_URL="https://github.com/psaux-it/nginx-fastcgi-cache-purge-and-preload/releases/download"
+    SAFEXEC_RELEASE_URL="https://github.com/psaux-it/nginx-fastcgi-cache-purge-and-preload/releases/download" \
+    RIPGREP_URL="https://github.com/BurntSushi/ripgrep/releases/download"
 
 # Set PHP extensions
 ENV PHP_EXTENSIONS="bz2 calendar ctype curl dom iconv json mbstring pdo_pgsql readline simplexml \
@@ -43,7 +45,6 @@ RUN apt-get update && apt-get install -y \
     coreutils \
     wget \
     cpulimit \
-    ripgrep \
     # Install dependencies for service health checks
     mariadb-client \
     netcat-traditional \
@@ -125,6 +126,14 @@ RUN if [ "${INSTALL_SAFEXEC}" = "true" ]; then \
     else \
         echo "INSTALL_SAFEXEC=false — skipping safexec installation"; \
     fi
+
+# Install ripgrep (latest stable)
+RUN ARCH=$(dpkg --print-architecture) && \
+    DEB="ripgrep_${RIPGREP_VERSION}-1_${ARCH}.deb" && \
+    wget -q "${RIPGREP_URL}/${RIPGREP_VERSION}/${DEB}" -O "/tmp/${DEB}" && \
+    dpkg -i "/tmp/${DEB}" && \
+    rm -f "/tmp/${DEB}" && \
+    echo "ripgrep $(rg --version | head -n1) installed successfully"
 
 # Copy the scripts into the container
 COPY wordpress/entrypoint-wp.sh /entrypoint-wp.sh
