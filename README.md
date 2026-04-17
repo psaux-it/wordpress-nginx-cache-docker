@@ -12,13 +12,13 @@ https://github.com/user-attachments/assets/5a946953-c7f1-4d44-a8ac-3487018d7114
 ## ✨ Features
 
 - ✅ **WordPress** (6.9.4) with **FPM** (8.4)
-- ✅ **MySQL** (8) for database management
-- ✅ **FastCGI** cache ready with **Nginx** (1.29.1 + ngx_cache_purge)
+- ✅ **MySQL** (9) for database management
+- ✅ **FastCGI** cache ready with **Nginx** (1.29.7 + ngx_cache_purge v2.5.6)
 - ✅ **WP-CLI** ready for plugin and theme installations (check **.env**)
 - ✅ **phpMyAdmin** (5.2.3) ready
 - ✅ Includes all dependencies required for the **NPP plugin**
 - ✅ Isolated and secure **PHP process owner** for enhanced security and performance
-- ✅ Built with **bindfs** (1.18.4) + **fuse3** (3.18.1) for FUSE-based mounting of **Nginx Cache Path**
+- ✅ Built with **bindfs** (1.18.4) + **fuse3** (3.18.2) for FUSE-based mounting of **Nginx Cache Path**
 - ✅ Installed a wide range of **PHP extensions**
 - ✅ Easily switch between the **stable** release and the **bleeding-edge** version of the **NPP**
 - ✅ **safexec** installed for hardened, privilege-dropped cache preload execution
