@@ -32,6 +32,13 @@ services:
           define('FORCE_SSL_ADMIN', true);
           define('FORCE_SSL_LOGIN', true);
           if (defined('WP_CLI') && WP_CLI && !isset($$_SERVER['HTTP_HOST'])) $$_SERVER['HTTP_HOST'] = "${NPP_HTTP_HOST}";
+          define('WP_REDIS_HOST', '${REDIS_HOST_}');
+          define('WP_REDIS_PORT', ${REDIS_PORT_});
+          define('WP_REDIS_DATABASE', ${REDIS_DATABASE_});
+          define('WP_REDIS_TIMEOUT', 1);
+          define('WP_REDIS_READ_TIMEOUT', 1);
+          define('WP_REDIS_PREFIX', 'wp_npp_');
+          define('WP_CACHE_KEY_SALT', 'npp_');
       - NPP_WEB_ROOT=${NPP_WEB_ROOT_}
       - NPP_NGINX_CACHE_PATH=${NPP_NGINX_CACHE_PATH_}
       - NPP_HTTP_HOST=${NPP_HTTP_HOST}
@@ -55,8 +62,11 @@ services:
       - WORDPRESS_ADMIN_USER=${WORDPRESS_ADMIN_USER_}
       - WORDPRESS_ADMIN_PASSWORD=${WORDPRESS_ADMIN_PASSWORD_}
       - WORDPRESS_ADMIN_EMAIL=${WORDPRESS_ADMIN_EMAIL_}
+      - REDIS_HOST=${REDIS_HOST_}
+      - REDIS_PORT=${REDIS_PORT_}
     depends_on:
       - db
+      - redis
     security_opt:
       - apparmor:unconfined
       - seccomp:unconfined
@@ -200,9 +210,43 @@ services:
     networks:
       npp_network:
 
+  redis:
+    build:
+      context: .
+      dockerfile: redis/Dockerfile
+    image: ghcr.io/psaux-it/wordpress-nginx-cache-docker/redis:latest
+    container_name: wordpress-redis
+    restart: unless-stopped
+    expose:
+      - "6379"
+    volumes:
+      - redis-data:/data
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    networks:
+      npp_network:
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    mem_limit: "512MB"
+    mem_reservation: "128MB"
+    cpus: "0.5"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512MB"
+        reservations:
+          cpus: "0.25"
+          memory: "128MB"
+
 volumes:
   wordpress-db:
   wordpress:
+  redis-data:
   nginx_cache:
     driver: local
     driver_opts:
