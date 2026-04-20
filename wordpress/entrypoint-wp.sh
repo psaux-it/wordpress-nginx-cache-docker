@@ -122,5 +122,16 @@ until mysql --skip-ssl -h wordpress-db -u"${WORDPRESS_DB_USER}" -p"${WORDPRESS_D
 done
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} The ${COLOR_LIGHT_CYAN}MySQL database${COLOR_RESET} is ready! Proceeding..."
 
+# Wait for Redis to be ready
+_redis_host="${REDIS_HOST:-redis}"
+_redis_port="${REDIS_PORT:-6379}"
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Waiting for ${COLOR_LIGHT_CYAN}Redis${COLOR_RESET} at ${COLOR_CYAN}${_redis_host}:${_redis_port}${COLOR_RESET}..."
+until nc -z "${_redis_host}" "${_redis_port}" 2>/dev/null; do
+    echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP:${COLOR_RESET} ${COLOR_LIGHT_CYAN}Redis${COLOR_RESET} is not available yet. Retrying..."
+    sleep 3
+done
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} ${COLOR_LIGHT_CYAN}Redis${COLOR_RESET} is ready! Proceeding..."
+unset _redis_host _redis_port
+
 # Start php-fpm
 exec /usr/local/bin/docker-entrypoint.sh "$@"

@@ -266,6 +266,19 @@ else
     echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}No plugins${COLOR_RESET} to install."
 fi
 
+# Enable Redis Object Cache dropin if redis-cache plugin is installed
+if su -m -c "wp plugin is-installed redis-cache" "${NPP_USER}" >/dev/null 2>&1; then
+    if su -m -c "wp redis status 2>&1" "${NPP_USER}" | grep -qi "Status.*Connected"; then
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}Redis Object Cache${COLOR_RESET} dropin is already active. Skipping..."
+    else
+        if su -m -c "wp redis enable" "${NPP_USER}" >/dev/null 2>&1; then
+            echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}Redis Object Cache${COLOR_RESET} dropin enabled successfully."
+        else
+            echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}Redis Object Cache${COLOR_RESET} dropin enable failed — check logs."
+        fi
+    fi
+fi
+
 # Install Themes
 if [[ "${#NPP_THEMES[@]}" -gt 0 ]]; then
     for theme in "${NPP_THEMES[@]}"; do
@@ -398,7 +411,7 @@ if [[ "${NPP_EDGE}" -eq 1 ]]; then
 
         # Fix line-ending issues
         find "${TMP_CLONE_DIR:?}" -type f -exec dos2unix {} + >/dev/null 2>&1
- 
+
         # Sync clean staging dir → live plugin dir.
         mkdir -p "${PLUGIN_DIR:?}"
         rsync -a --delete "${TMP_CLONE_DIR:?}/" "${PLUGIN_DIR:?}/"
