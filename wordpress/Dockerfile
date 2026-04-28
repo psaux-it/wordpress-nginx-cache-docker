@@ -31,7 +31,7 @@ ENV FUSE_URL="https://github.com/libfuse/libfuse/releases/download/fuse-${LIBFUS
 # Set PHP extensions
 ENV PHP_EXTENSIONS="bz2 calendar ctype curl dom iconv json mbstring pdo_pgsql readline simplexml \
     soap sockets sodium xml xsl openssl exif zip intl event memcached yaml \
-    xdebug apcu zlib session gh:phpredis/phpredis@6.3.0 uuid brotli http mailparse ssh2 xattr \
+    xdebug apcu zlib session uuid brotli http mailparse ssh2 xattr \
     xdiff filter igbinary opcache timezonedb bcmath shmop pcre geos"
 
 # Install dependencies
@@ -110,6 +110,9 @@ RUN cd /tmp && \
 # Install PHP extensions
 ADD --chmod=0755 ${PHP_EXT_URL} /usr/local/bin/
 RUN install-php-extensions ${PHP_EXTENSIONS}
+
+# fix does not have REST dependency information
+RUN install-php-extensions gh:phpredis/phpredis@6.3.0
 
 # Install safexec
 ARG INSTALL_SAFEXEC=true
