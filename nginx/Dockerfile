@@ -11,7 +11,6 @@ FROM ${NGINX_FROM_IMAGE} AS builder
 
 ARG NGX_CACHE_PURGE_VERSION=2.5.6
 ARG NGX_HEADERS_MORE_VERSION=0.39
-ARG NGX_BROTLI_COMMIT=a71f9312c2deb28875acc7bacfdd5695a111aa53
 
 SHELL ["/bin/bash", "-exo", "pipefail", "-c"]
 
@@ -20,7 +19,6 @@ RUN apt-get update \
         patch make wget git devscripts debhelper dpkg-dev \
         quilt lsb-release build-essential libxml2-utils xsltproc \
         equivs g++ libparse-recdescent-perl \
-        libbrotli-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN XSLSCRIPT_SHA512="f7194c5198daeab9b3b0c3aebf006922c7df1d345d454bd8474489ff2eb6b4bf8e2ffe442489a45d1aab80da6ecebe0097759a1e12cc26b5f0613d05b7c09ffa *stdin" \
@@ -44,13 +42,7 @@ RUN mkdir /tmp/packages \
     && /pkg-oss/build_module.sh -v "${NGINX_VERSION}" -f -y -o /tmp/packages \
         -n headersmore \
         "https://github.com/openresty/headers-more-nginx-module/archive/refs/tags/v${NGX_HEADERS_MORE_VERSION}.tar.gz" \
-    && git clone --recurse-submodules https://github.com/google/ngx_brotli /tmp/ngx_brotli \
-    && git -C /tmp/ngx_brotli checkout ${NGX_BROTLI_COMMIT} \
-    && git -C /tmp/ngx_brotli submodule update --init \
-    && /pkg-oss/build_module.sh -v "${NGINX_VERSION}" -f -y -o /tmp/packages \
-        -n brotli \
-        /tmp/ngx_brotli \
-    && echo 'BUILT_MODULES="cachepurge headersmore brotli"' > /tmp/packages/modules.env
+    && echo 'BUILT_MODULES="cachepurge headersmore"' > /tmp/packages/modules.env
 
 # ── Stage 2: Final image ─────────────────────────────────────────────────────────
 FROM ${NGINX_FROM_IMAGE}
