@@ -44,9 +44,12 @@ RUN mkdir /tmp/packages \
     && /pkg-oss/build_module.sh -v "${NGINX_VERSION}" -f -y -o /tmp/packages \
         -n headersmore \
         "https://github.com/openresty/headers-more-nginx-module/archive/refs/tags/v${NGX_HEADERS_MORE_VERSION}.tar.gz" \
+    && git clone --recurse-submodules https://github.com/google/ngx_brotli /tmp/ngx_brotli \
+    && git -C /tmp/ngx_brotli checkout ${NGX_BROTLI_COMMIT} \
+    && git -C /tmp/ngx_brotli submodule update --init \
     && /pkg-oss/build_module.sh -v "${NGINX_VERSION}" -f -y -o /tmp/packages \
         -n brotli \
-        "https://github.com/google/ngx_brotli/archive/${NGX_BROTLI_COMMIT}.tar.gz" \
+        /tmp/ngx_brotli \
     && echo 'BUILT_MODULES="cachepurge headersmore brotli"' > /tmp/packages/modules.env
 
 # ── Stage 2: Final image ─────────────────────────────────────────────────────────
