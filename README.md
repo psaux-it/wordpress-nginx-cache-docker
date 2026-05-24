@@ -1,19 +1,15 @@
 # 🐳 NPP Dockerized  [![Docker Build](https://github.com/psaux-it/wordpress-nginx-cache-docker/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/psaux-it/wordpress-nginx-cache-docker/actions/workflows/docker-publish.yml)
 
-Welcome to the Docker project optimized for the **[(NPP) WordPress Plugin](https://wordpress.org/plugins/fastcgi-cache-purge-and-preload-nginx/)**! 🎉 This full-stack Dockerized environment is designed for **NPP**, including **WordPress** with **FPM**, **Nginx**, **MySQL**, **FastCGI**, **WP-CLI**, **phpMyAdmin**, and necessary **PHP extensions**. It's tailored for easy deployment and efficient use of the **NPP plugin**
+Welcome to the Docker project optimized for the **[(NPP) WordPress Plugin](https://wordpress.org/plugins/fastcgi-cache-purge-and-preload-nginx/)**! 🎉 This full-stack Dockerized environment is designed for **NPP**, including **WordPress** with **FPM**, **Nginx**, **MySQL**, **FastCGI Cache**, **WP-CLI**, **phpMyAdmin**, **Redis**, **mitmproxy** and necessary **PHP extensions**. It's tailored for easy deployment and efficient use of the **NPP plugin**
 
 Explore the **[NPP Main GitHub Repository](https://github.com/psaux-it/nginx-fastcgi-cache-purge-and-preload)** to access the heart of the plugin development.
 
-https://github.com/user-attachments/assets/5a946953-c7f1-4d44-a8ac-3487018d7114
-
-🔊™️ In The Silence - Giuseppe Ottaviani
-
-
 ## ✨ Features
 
-- ✅ **WordPress** (6.9.4) with **FPM** (8.4)
+- ✅ **WordPress** (7.0) with **FPM** (8.4)
 - ✅ **MySQL** (9) for database management
-- ✅ **FastCGI** cache ready with **Nginx** (1.30.0 + ngx_cache_purge v2.5.6)
+- ✅ **Nginx** cache ready with (**Nginx** 1.31.1 + ngx_cache_purge v2.5.6 + ngx_headers_more v0.39)
+- ✅ **Redis** (7.4) for object caching and session management
 - ✅ **WP-CLI** ready for plugin and theme installations (check **.env**)
 - ✅ **phpMyAdmin** (5.2.3) ready
 - ✅ Includes all dependencies required for the **NPP plugin**
