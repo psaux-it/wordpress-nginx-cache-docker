@@ -12,6 +12,7 @@ Explore the **[NPP Main GitHub Repository](https://github.com/psaux-it/nginx-fas
 - ✅ **Redis** (7.4) for object caching and session management
 - ✅ **WP-CLI** ready for plugin and theme installations (check **.env**)
 - ✅ **phpMyAdmin** (5.2.3) ready
+- ✅ Nginx cache optimised for **WooCommerce**
 - ✅ Includes all system dependencies required for the **NPP plugin**
 - ✅ Isolated and secure **PHP process owner** for enhanced security and performance
 - ✅ Built with **bindfs** (1.18.4) + **fuse3** (3.18.2) for FUSE-based mounting of **Nginx Cache Path**
