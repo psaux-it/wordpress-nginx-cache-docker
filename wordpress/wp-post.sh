@@ -86,6 +86,10 @@ for var in \
     fi
 done
 
+# Drop any stale readiness marker from a previous boot before redoing the work,
+# so 'nginx' can never see a leftover "ready" file from a prior container life.
+rm -f "${NPP_WEB_ROOT}/.npp-ready"
+
 # Wait for 'wordpress-fpm' container with 'fpm' up
 # We need to sure '/var/www/html' exists for 'wp-cli'
 wait_for_service "wordpress" 9001
@@ -494,8 +498,8 @@ else
 fi
 unset _bootstrap_done
 
-# Listen on dummy port for 'nginx' container health check
-echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Starting to listen on dummy port ${COLOR_CYAN}9999${COLOR_RESET}..."
-if ! nc -zv 127.0.0.1 9999 2>/dev/null; then
-    nohup nc -l -p 9999 >/dev/null 2>&1 &
-fi
+# Signal readiness to 'nginx' via a marker file on the shared web root
+# (replaces the old one-shot 'nc -l -p 9999' dummy port, which only ever
+# tolerated a single readiness probe and went silent on any later check).
+touch "${NPP_WEB_ROOT}/.npp-ready"
+echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP:${COLOR_RESET} Readiness marker ${COLOR_LIGHT_CYAN}${NPP_WEB_ROOT}/.npp-ready${COLOR_RESET} created. ${COLOR_CYAN}NPP Dockerized${COLOR_RESET} post-start complete."
