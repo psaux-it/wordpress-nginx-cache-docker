@@ -55,14 +55,32 @@ wait_for_service() {
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} ${COLOR_CYAN}${host}:${port}${COLOR_RESET} is now available! Proceeding..."
 }
 
+# Function to wait for the WordPress post-start readiness marker file.
+# Polling a file on the shared web-root volume survives 'nginx' restarting
+# on its own, unlike a one-shot TCP probe that only tolerates a single check.
+wait_for_file() {
+    local file="$1"
+    local retries=60
+    local wait_time=5
+
+    while [[ ! -f "${file}" ]]; do
+        if [[ "${retries}" -le 0 ]]; then
+            echo -e "${COLOR_RED}${COLOR_BOLD}NPP-NGINX-FATAL:${COLOR_RESET} ${COLOR_CYAN}${file}${COLOR_RESET} was not created in time. Exiting..."
+            exit 1
+        fi
+        echo -e "${COLOR_YELLOW}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Waiting for ${COLOR_CYAN}${file}${COLOR_RESET} to appear..."
+        sleep "${wait_time}"
+        retries=$((retries - 1))
+    done
+
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} ${COLOR_CYAN}${file}${COLOR_RESET} found! Proceeding..."
+}
+
 # Display pre-entrypoint start message
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} ${COLOR_CYAN}${COLOR_BOLD}[Pre-Entrypoint]:${COLOR_RESET} Preparing environment before starting the ${COLOR_LIGHT_CYAN}Nginx${COLOR_RESET} service..."
 
 # Wait for 'php-fpm' to be up
 wait_for_service "wordpress" 9001
-
-# Wait for Wordpress core Initialization to complete
-wait_for_service "wordpress" 9999
 
 # Check if required environment variables are set
 for var in \
@@ -79,6 +97,9 @@ for var in \
         exit 1
     fi
 done
+
+# Wait for Wordpress core Initialization (post-start setup) to complete
+wait_for_file "${NPP_WEB_ROOT}/.npp-ready"
 
 # Create Isolated PHP process owner user and group on Nginx container
 echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-NGINX:${COLOR_RESET} Checking PHP process owner user and group with UID ${COLOR_CYAN}${NPP_UID}${COLOR_RESET} and GID ${COLOR_CYAN}${NPP_GID}${COLOR_RESET}"
