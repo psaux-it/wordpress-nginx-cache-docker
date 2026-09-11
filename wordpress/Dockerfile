@@ -13,11 +13,11 @@ ENV LANG=C.UTF-8 \
     DEBIAN_FRONTEND=noninteractive
 
 # Set package versions
-ENV LIBFUSE_VERSION=3.18.2 \
+ENV LIBFUSE_VERSION=3.18.3 \
     BINDFS_VERSION=1.18.4 \
     SAFEXEC_VERSION=1.9.6-1 \
-    SAFEXEC_RELEASE_TAG=v2.1.6 \
-    RIPGREP_VERSION=15.1.0
+    SAFEXEC_RELEASE_TAG=v2.1.7 \
+    RIPGREP_VERSION=15.2.0
 
 # Set package URL's
 ENV FUSE_URL="https://github.com/libfuse/libfuse/releases/download/fuse-${LIBFUSE_VERSION}/fuse-${LIBFUSE_VERSION}.tar.gz" \
