@@ -82,17 +82,17 @@ services:
       - command: /scripts/wp-post.sh
         working_dir: ${NPP_WEB_ROOT_}
         user: root
-    mem_limit: "2GB"
-    mem_reservation: "1GB"
+    mem_limit: "1.5GB"
+    mem_reservation: "768MB"
     cpus: "1.0"
     deploy:
       resources:
         limits:
           cpus: "1.0"
-          memory: "2GB"
+          memory: "1.5GB"
         reservations:
-          cpus: "1.0"
-          memory: "1GB"
+          cpus: "0.5"
+          memory: "768MB"
 
   db:
     build:
@@ -120,17 +120,17 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     networks:
       npp_network:
-    mem_limit: "2GB"
-    mem_reservation: "1GB"
+    mem_limit: "1.5GB"
+    mem_reservation: "768MB"
     cpus: "1.0"
     deploy:
       resources:
         limits:
           cpus: "1.0"
-          memory: "2GB"
+          memory: "1.5GB"
         reservations:
           cpus: "0.5"
-          memory: "1GB"
+          memory: "768MB"
 
   phpmyadmin:
     build:
@@ -151,6 +151,17 @@ services:
       - npp_network
     depends_on:
       - db
+    mem_limit: "512MB"
+    mem_reservation: "128MB"
+    cpus: "0.5"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512MB"
+        reservations:
+          cpus: "0.25"
+          memory: "128MB"
 
   nginx:
     build:
@@ -186,17 +197,17 @@ services:
       - NPP_NGINX_CACHE_PATH=${NPP_NGINX_CACHE_PATH_}
     networks:
       npp_network:
-    mem_limit: "1.5GB"
-    mem_reservation: "1GB"
+    mem_limit: "512MB"
+    mem_reservation: "256MB"
     cpus: "1.0"
     deploy:
       resources:
         limits:
           cpus: "1"
-          memory: "1.5GB"
+          memory: "512MB"
         reservations:
           cpus: "0.5"
-          memory: "1GB"
+          memory: "256MB"
 
   mitmproxy:
     build:
@@ -209,6 +220,17 @@ services:
       - nginx
     networks:
       npp_network:
+    mem_limit: "512MB"
+    mem_reservation: "128MB"
+    cpus: "0.5"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512MB"
+        reservations:
+          cpus: "0.25"
+          memory: "128MB"
 
   redis:
     build:
