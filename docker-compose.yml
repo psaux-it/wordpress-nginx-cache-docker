@@ -84,14 +84,14 @@ services:
         user: root
     mem_limit: "1.5GB"
     mem_reservation: "768MB"
-    cpus: "1.0"
+    cpus: "2.0"
     deploy:
       resources:
         limits:
-          cpus: "1.0"
+          cpus: "2.0"
           memory: "1.5GB"
         reservations:
-          cpus: "0.5"
+          cpus: "1.0"
           memory: "768MB"
 
   db:
