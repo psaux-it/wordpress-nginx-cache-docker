@@ -6,7 +6,7 @@
 # ----------------------------------------------------------------------------     #
 
 # Here the magic, the rest of it is ordinary
-FROM mysql:26.7.0
+FROM mysql:8.4
 
 # Install necessary packages
 RUN microdnf install -y procps-ng && \
