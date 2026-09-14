@@ -97,7 +97,17 @@ git clone https://github.com/psaux-it/wordpress-nginx-cache-docker.git
 cd wordpress-nginx-cache-docker
 ```
 
-### 2. Run the Services
+### 2. Configure environment
+ 
+Copy the example environment file and adjust it to your own setup (passwords, admin credentials, host, etc. — see the **.env** section above for details):
+ 
+```bash
+cp .env.example .env
+```
+ 
+> ⚠️ **Do not skip this.** The default `.env.example` values (passwords, WordPress admin credentials) are placeholders only and must be changed before any production deployment.
+
+### 3. Run the Services
 
 Run the following command to build and start the container:
 
