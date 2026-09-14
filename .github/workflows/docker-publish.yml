@@ -26,6 +26,8 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.ref }}
 
+      - name: Prepare environment file
+        run: cp .env.example .env
 
       - name: Source env.template
         run: |
