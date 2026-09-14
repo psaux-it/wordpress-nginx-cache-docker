@@ -140,6 +140,7 @@ services:
     container_name: phpmyadmin
     env_file:
       - .env
+    restart: unless-stopped
     environment:
       - PMA_HOST=db
       - PMA_PORT=3306
