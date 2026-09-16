@@ -406,11 +406,11 @@ if [[ "${NPP_EDGE}" -eq 1 ]]; then
             "${TMP_CLONE_DIR:?}/tests"
         rm -f \
             "${TMP_CLONE_DIR:?}/README.md" \
-            "${TMP_CLONE_DIR:?}/version" \
             "${TMP_CLONE_DIR:?}/CONTRIBUTING.md" \
             "${TMP_CLONE_DIR:?}/SECURITY.md" \
             "${TMP_CLONE_DIR:?}/LICENSE" \
-            "${TMP_CLONE_DIR:?}/wordfence-vendor.txt"
+            "${TMP_CLONE_DIR:?}/wordfence-vendor.txt" \
+            "${TMP_CLONE_DIR:?}/.gitattributes"
         echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-EDGE:${COLOR_RESET} Non-production files stripped from staging dir."
 
         # Fix line-ending issues
