@@ -139,6 +139,39 @@ docker compose up --build
   - **`/var/cache/nginx-npp`**
   - Use the FUSE mount path as the Nginx cache path in the NPP plugin settings page.
 
+## 🧪 Fail2Ban E2E Lab (`actionstart-fail2ban.sh`)
+
+A helper script that spins up everything needed to run the NPP **Fail2ban-test** end-to-end suite inside this stack. It tests how the plugin handles incoming fail2ban bans (queueing, RIPEstat whois/abuse lookups, retries, rate limits) **without touching the real `stat.ripe.net`**. A fake RIPEstat server is used instead.
+
+**What it does**
+- Starts the stack with `docker-compose.lab.yml`, which maps `stat.ripe.net` to `127.0.0.2` inside `wordpress-fpm` and mounts the `npp_lab` volume.
+- Waits for WordPress and the NPP plugin (minimum version **2.1.8**).
+- Installs the needed tooling in `wordpress-fpm`, creates a lab CA, and installs the `f2b-lab` mu-plugin.
+- Runs the test phases (`happy`, `faults`, optional `ratelimit`) and prints a pass/fail summary.
+
+**Usage** (run on the Docker **host**, from the directory containing `docker-compose.yml`)
+
+```bash
+./actionstart-fail2ban.sh                       # prepare everything and run all phases
+./actionstart-fail2ban.sh --only happy,faults   # run selected phases
+./actionstart-fail2ban.sh --with-ratelimit      # also run the ratelimit phase
+./actionstart-fail2ban.sh --count 100           # more IPs in the happy phase
+./actionstart-fail2ban.sh --build               # rebuild images while bringing the stack up
+./actionstart-fail2ban.sh --no-run              # prepare only, don't run the tests
+./actionstart-fail2ban.sh --shell               # root shell in the lab directory
+```
+
+**Cleanup**
+
+```bash
+./actionstart-fail2ban.sh --clean   # stop fake RIPEstat, remove mu-plugin + lab CA
+./actionstart-fail2ban.sh --purge   # --clean + delete pki/ and run/, drop the lab hosts override
+```
+
+> `--purge` recreates the `wordpress` container, so `python3` is reinstalled on the next run.
+
+Optional environment overrides: `C`, `WP_USER`, `SITE_URL`, `WP_PATH`, `LAB_DIR`, `MIN_NPP`, `WAIT` (see the header of the script for defaults).
+
 ---
 #### ⚠️ Important Notices
 🚨 **The included SSL certificates are dummy, strictly for local usage** and **must not be used in production environments**.<br>
