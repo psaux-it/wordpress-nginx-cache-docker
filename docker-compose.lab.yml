@@ -1,0 +1,4 @@
+services:
+  wordpress:
+    extra_hosts:
+      - "stat.ripe.net:127.0.0.2"
