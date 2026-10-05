@@ -24,6 +24,7 @@
 #   WP_USER    PHP-FPM pool user            (default: NPP_USER_ from .env, else npp)
 #   SITE_URL   URL the driver calls         (default: https://nginx, compose network)
 #   WP_PATH    WordPress root in container  (default: /var/www/html)
+#   LAB_DIR    lab dir in container         (default: /opt/npp-fail2ban-test)
 #   MIN_NPP    minimum plugin version       (default: 2.1.8)
 #   WAIT       seconds to wait for stack    (default: 300)
 set -euo pipefail
@@ -38,7 +39,7 @@ SITE_URL="${SITE_URL:-https://nginx}"
 MIN_NPP="${MIN_NPP:-2.1.8}"
 WAIT="${WAIT:-300}"
 PLUGIN_SLUG="fastcgi-cache-purge-and-preload-nginx"
-D="$WP_PATH/wp-content/plugins/$PLUGIN_SLUG/fail2ban-test"
+D="${LAB_DIR:-/opt/npp-fail2ban-test}"   # lab lives OUTSIDE the web root (npp_lab volume)
 COMPOSE=(docker compose -f docker-compose.yml -f docker-compose.lab.yml)
 COMPOSE_BASE=(docker compose -f docker-compose.yml)
 
@@ -160,8 +161,8 @@ NPP_VER="$(wpc plugin get "$PLUGIN_SLUG" --field=version 2>/dev/null | tr -d '\r
 ver_ge "$NPP_VER" "$MIN_NPP" || die "NPP $NPP_VER < $MIN_NPP (no Fail2Ban subsystem). Set NPP_EDGE_=1 in .env and recreate wordpress."
 ok "NPP $NPP_VER (>= $MIN_NPP)"
 [ "$NPP_VER" = "$MIN_NPP" ] || warn "stack deploys the LATEST v* branch, deployed is $NPP_VER (tests of $MIN_NPP may differ slightly)"
+wait_for "lab files in $D (wp-post.sh relocates fail2ban-test)" rx sh -c "[ -f '$D/e2e.py' ]"
 rx sh -c "[ -x '$D/run-e2e.sh' ] || chmod +x '$D'/*.sh" || true
-rx sh -c "[ -f '$D/e2e.py' ]" || die "fail2ban-test/ missing in the deployed plugin ($D). Is NPP_EDGE_=1?"
 ok "$D present"
 
 step "5/7 Tooling inside $C"
@@ -185,7 +186,7 @@ else
     ok "webhook token present"
 fi
 
-[ "$MODE" = prepare ] && { step "Prepared. Run tests with: ./actionstart.sh --only happy,faults"; exit 0; }
+[ "$MODE" = prepare ] && { step "Prepared. Run tests with: ./actionstart-fail2ban.sh --only happy,faults"; exit 0; }
 
 # ---------------------------------------------------------------- 7. run ----
 step "7/7 Running e2e (${PASS[*]:-all phases except ratelimit})"
@@ -202,7 +203,7 @@ else
     printf '%sTESTS FAILED (exit %s)%s\n' "$R" "$RC" "$N"
     echo "  fake RIPEstat log : docker exec $C tail -n 50 $D/run/fake_ripestat.log"
     echo "  plugin log        : docker exec -u root $C sh -c 'cat \$(find $WP_PATH -name fastcgi_ops.log | head -1)'"
-    echo "  shell in lab dir  : ./actionstart.sh --shell"
+    echo "  shell in lab dir  : ./actionstart-fail2ban.sh --shell"
 fi
-echo "  cleanup           : ./actionstart.sh --clean   (or --purge)"
+echo "  cleanup           : ./actionstart-fail2ban.sh --clean   (or --purge)"
 exit "$RC"
