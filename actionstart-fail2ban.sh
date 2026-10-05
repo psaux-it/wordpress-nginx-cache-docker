@@ -116,7 +116,9 @@ mode_clean() {
     fi
     step "Verify"
     rx sh -c "pgrep -fl 'fake_ripestat[.]py' || echo 'fake RIPEstat: stopped'"
-    rx sh -c "ls '$WP_PATH/wp-content/mu-plugins/f2b-lab.php' 2>&1 || true"
+    rx test ! -e "$WP_PATH/wp-content/mu-plugins/f2b-lab.php" \
+        && ok "mu-plugin removed" \
+        || warn "mu-plugin still present: $WP_PATH/wp-content/mu-plugins/f2b-lab.php"
     exit 0
 }
 
