@@ -448,6 +448,7 @@ if [[ "${NPP_EDGE}" -eq 1 ]]; then
             "${TMP_CLONE_DIR:?}/wordfence-vendor.txt" \
             "${TMP_CLONE_DIR:?}/.gitattributes" \
             "${TMP_CLONE_DIR:?}/.gitignore" \
+            "${TMP_CLONE_DIR:?}/composer.json" \
             "${TMP_CLONE_DIR:?}/phpcs.xml.dist"
         echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-EDGE:${COLOR_RESET} Non-production files stripped from staging dir."
 
