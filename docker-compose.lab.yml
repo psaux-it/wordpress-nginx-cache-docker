@@ -2,3 +2,8 @@ services:
   wordpress:
     extra_hosts:
       - "stat.ripe.net:127.0.0.2"
+    volumes:
+      - npp_lab:/opt/npp-fail2ban-test
+
+volumes:
+  npp_lab:
