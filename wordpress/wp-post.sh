@@ -313,6 +313,42 @@ else
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}Permalink structure${COLOR_RESET} is already properly set. Skipping..."
 fi
 
+# Install fail2ban-test lab OUTSIDE the web root.
+# Lives on the 'npp_lab' named volume, so rsync --delete on the plugin dir never touches it.
+# Usage: npp_lab_install <source fail2ban-test dir>
+NPP_LAB_DIR="${NPP_LAB_DIR:-/opt/npp-fail2ban-test}"
+
+# Lab is only active when docker-compose.lab.yml mounted the npp_lab volume.
+npp_lab_enabled() {
+    grep -qs " ${NPP_LAB_DIR} " /proc/self/mounts
+}
+
+npp_lab_install() {
+    npp_lab_enabled || return 0
+    local src="$1" item name
+    [[ -d "${src}" ]] || return 0
+    mkdir -p "${NPP_LAB_DIR:?}"
+
+    # Refresh lab files, keep generated state (pki/ CA + keys, run/ pid + logs)
+    find "${NPP_LAB_DIR:?}" -mindepth 1 -maxdepth 1 ! -name pki ! -name run -exec rm -rf {} +
+    shopt -s dotglob nullglob
+    for item in "${src}"/*; do
+        name="$(basename "${item}")"
+        if [[ ( "${name}" == "pki" || "${name}" == "run" ) && -e "${NPP_LAB_DIR}/${name}" ]]; then
+            continue
+        fi
+        cp -a "${item}" "${NPP_LAB_DIR}/"
+    done
+    shopt -u dotglob nullglob
+
+    # Lab runs as root (docker exec -u root); WP-CLI never reads these files.
+    chown -R root:root "${NPP_LAB_DIR}"
+    chmod -R u=rwX,go= "${NPP_LAB_DIR}"
+    chmod 755 "${NPP_LAB_DIR}"   # root dir traversable so 'runuser -u npp wp' can use it as cwd; contents stay 700/600
+    find "${NPP_LAB_DIR}" -maxdepth 1 -type f \( -name '*.sh' -o -name 'e2e.py' \) -exec chmod u+x {} +
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-LAB:${COLOR_RESET} fail2ban-test installed to ${COLOR_CYAN}${NPP_LAB_DIR}${COLOR_RESET} (outside web root)."
+}
+
 # Deploy bleeding edge NPP
 if [[ "${NPP_EDGE}" -eq 1 ]]; then
     # Set variables
@@ -418,6 +454,10 @@ if [[ "${NPP_EDGE}" -eq 1 ]]; then
         # Fix line-ending issues
         find "${TMP_CLONE_DIR:?}" -type f -exec dos2unix {} + >/dev/null 2>&1
 
+        # Move fail2ban-test lab out of the web root, keep the plugin dir production-only.
+        npp_lab_install "${TMP_CLONE_DIR:?}/fail2ban-test"
+        rm -rf "${TMP_CLONE_DIR:?}/fail2ban-test"
+
         # Sync clean staging dir → live plugin dir.
         mkdir -p "${PLUGIN_DIR:?}"
         rsync -a --delete "${TMP_CLONE_DIR:?}/" "${PLUGIN_DIR:?}/"
@@ -453,6 +493,13 @@ if [[ "${NPP_EDGE}" -eq 1 ]]; then
     else
         echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-EDGE:${COLOR_RESET} Plugin is up-to-date with commit ${COLOR_CYAN}${REMOTE_COMMIT_HASH}${COLOR_RESET}."
         echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-EDGE:${COLOR_RESET} ${COLOR_LIGHT_CYAN}######################${COLOR_RESET}"
+    fi
+
+    # One-time migration: older deployments still carry fail2ban-test inside the plugin dir.
+    # Gated: without the npp_lab mount, install would no-op and rm -rf would destroy the old dir (incl. pki/).
+    if npp_lab_enabled && [[ -d "${PLUGIN_DIR:?}/fail2ban-test" ]]; then
+        npp_lab_install "${PLUGIN_DIR}/fail2ban-test"
+        rm -rf "${PLUGIN_DIR:?}/fail2ban-test"
     fi
 fi
 
