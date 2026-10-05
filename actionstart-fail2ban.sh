@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# one-command bootstrap for the NPP Fail2ban-test e2e lab
+# bootstrap for the NPP Fail2ban-test e2e lab
 # inside the wordpress-nginx-cache-docker stack.
 #
 # Run it on the DOCKER HOST, from the stack directory (where docker-compose.yml is).
 #
-#   ./actionstart.sh                       prepare everything, run all phases
-#   ./actionstart.sh --only happy,faults   prepare + run selected phases
-#   ./actionstart.sh --with-ratelimit      also run the ratelimit phase
-#   ./actionstart.sh --count 100           more IPs in the happy phase
-#   ./actionstart.sh --build               rebuild images while bringing the stack up
-#   ./actionstart.sh --no-run              prepare only (stack, python3, lab wiring)
-#   ./actionstart.sh --clean               stop fake RIPEstat, remove mu-plugin + lab CA
-#   ./actionstart.sh --purge               --clean + delete pki/ run/ + drop the lab hosts override
-#   ./actionstart.sh --shell               root shell in the fail2ban-test directory
+#   ./actionstart-fail2ban.sh                       prepare everything, run all phases
+#   ./actionstart-fail2ban.sh --only happy,faults   prepare + run selected phases
+#   ./actionstart-fail2ban.sh --with-ratelimit      also run the ratelimit phase
+#   ./actionstart-fail2ban.sh --count 100           more IPs in the happy phase
+#   ./actionstart-fail2ban.sh --build               rebuild images while bringing the stack up
+#   ./actionstart-fail2ban.sh --no-run              prepare only (stack, python3, lab wiring)
+#   ./actionstart-fail2ban.sh --clean               stop fake RIPEstat, remove mu-plugin + lab CA
+#   ./actionstart-fail2ban.sh --purge               --clean + delete pki/ run/ + drop the lab hosts override
+#   ./actionstart-fail2ban.sh --shell               root shell in the fail2ban-test directory
 #
 # Everything the lab needs (driver, fake RIPEstat, plugin PHP worker) must share
 # one /etc/hosts and one loopback, so all test steps run INSIDE the wordpress-fpm
