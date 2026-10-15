@@ -313,40 +313,41 @@ else
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}Permalink structure${COLOR_RESET} is already properly set. Skipping..."
 fi
 
-# Install fail2ban-test lab OUTSIDE the web root.
-# Lives on the 'npp_lab' named volume, so rsync --delete on the plugin dir never touches it.
-# Usage: npp_lab_install <source fail2ban-test dir>
+# Install the test labs (fail2ban-test, http-purge-test) OUTSIDE the web root.
+# Each lives on its own named volume (npp_lab, npp_purge_lab), so rsync --delete on the plugin dir never touches it.
+# Usage: npp_lab_install <source lab dir> [lab dir, default: NPP_LAB_DIR]
 NPP_LAB_DIR="${NPP_LAB_DIR:-/opt/npp-fail2ban-test}"
+NPP_PURGE_LAB_DIR="${NPP_PURGE_LAB_DIR:-/opt/npp-http-purge-test}"
 
-# Lab is only active when docker-compose.lab.yml mounted the npp_lab volume.
+# A lab is only active when docker-compose.lab.yml mounted its volume.
 npp_lab_enabled() {
-    grep -qs " ${NPP_LAB_DIR} " /proc/self/mounts
+    grep -qs " ${1:-${NPP_LAB_DIR}} " /proc/self/mounts
 }
 
 npp_lab_install() {
-    npp_lab_enabled || return 0
-    local src="$1" item name
+    local src="$1" lab="${2:-${NPP_LAB_DIR}}" item name
+    npp_lab_enabled "${lab}" || return 0
     [[ -d "${src}" ]] || return 0
-    mkdir -p "${NPP_LAB_DIR:?}"
+    mkdir -p "${lab:?}"
 
-    # Refresh lab files, keep generated state (pki/ CA + keys, run/ pid + logs)
-    find "${NPP_LAB_DIR:?}" -mindepth 1 -maxdepth 1 ! -name pki ! -name run -exec rm -rf {} +
+    # Refresh lab files, keep generated state (pki/ CA + keys, run/ pid + logs, ng/ + build/ nginx builds)
+    find "${lab:?}" -mindepth 1 -maxdepth 1 ! -name pki ! -name run ! -name ng ! -name build -exec rm -rf {} +
     shopt -s dotglob nullglob
     for item in "${src}"/*; do
         name="$(basename "${item}")"
-        if [[ ( "${name}" == "pki" || "${name}" == "run" ) && -e "${NPP_LAB_DIR}/${name}" ]]; then
+        if [[ ( "${name}" == "pki" || "${name}" == "run" || "${name}" == "ng" || "${name}" == "build" ) && -e "${lab}/${name}" ]]; then
             continue
         fi
-        cp -a "${item}" "${NPP_LAB_DIR}/"
+        cp -a "${item}" "${lab}/"
     done
     shopt -u dotglob nullglob
 
     # Lab runs as root (docker exec -u root); WP-CLI never reads these files.
-    chown -R root:root "${NPP_LAB_DIR}"
-    chmod -R u=rwX,go= "${NPP_LAB_DIR}"
-    chmod 755 "${NPP_LAB_DIR}"   # root dir traversable so 'runuser -u npp wp' can use it as cwd; contents stay 700/600
-    find "${NPP_LAB_DIR}" -maxdepth 1 -type f \( -name '*.sh' -o -name 'e2e.py' \) -exec chmod u+x {} +
-    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-LAB:${COLOR_RESET} fail2ban-test installed to ${COLOR_CYAN}${NPP_LAB_DIR}${COLOR_RESET} (outside web root)."
+    chown -R root:root "${lab}"
+    chmod -R u=rwX,go= "${lab}"
+    chmod 755 "${lab}"   # root dir traversable so 'runuser -u npp wp' can use it as cwd; contents stay 700/600
+    find "${lab}" -maxdepth 1 -type f \( -name '*.sh' -o -name 'e2e.py' -o -name 'delayproxy.py' \) -exec chmod u+x {} +
+    echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-LAB:${COLOR_RESET} $(basename "${src}") installed to ${COLOR_CYAN}${lab}${COLOR_RESET} (outside web root)."
 }
 
 # Deploy bleeding edge NPP
@@ -458,6 +459,8 @@ if [[ "${NPP_EDGE}" -eq 1 ]]; then
         # Move fail2ban-test lab out of the web root, keep the plugin dir production-only.
         npp_lab_install "${TMP_CLONE_DIR:?}/fail2ban-test"
         rm -rf "${TMP_CLONE_DIR:?}/fail2ban-test"
+        npp_lab_install "${TMP_CLONE_DIR:?}/http-purge-test" "${NPP_PURGE_LAB_DIR}"
+        rm -rf "${TMP_CLONE_DIR:?}/http-purge-test"
 
         # Sync clean staging dir → live plugin dir.
         mkdir -p "${PLUGIN_DIR:?}"
