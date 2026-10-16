@@ -5,6 +5,8 @@ services:
     volumes:
       - npp_lab:/opt/npp-fail2ban-test
       - npp_purge_lab:/opt/npp-http-purge-test
+    cap_add:
+      - LINUX_IMMUTABLE   # chattr +i for the deletefail scenario
 
 volumes:
   npp_lab:
