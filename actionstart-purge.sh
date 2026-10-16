@@ -138,10 +138,10 @@ step "5/6 Tooling inside $C"
 NEED_MATRIX=1
 for a in ${PASS[@]+"${PASS[@]}"}; do [ "$a" = mock ] && NEED_MATRIX=0; done
 if [ "$NEED_MATRIX" -eq 1 ]; then
-    MISSING="$(rx sh -c 'for t in python3 gcc make git curl pgrep seq xargs; do command -v $t >/dev/null || printf "%s " $t; done')"
+    MISSING="$(rx sh -c 'for t in python3 gcc make git curl pgrep seq xargs chattr lsattr; do command -v $t >/dev/null || printf "%s " $t; done')"
     if [ -n "$MISSING" ] || ! rx sh -c 'dpkg -s libpcre2-dev zlib1g-dev libssl-dev >/dev/null 2>&1'; then
         warn "build tooling missing (${MISSING:-dev libs}) - installing (lost on container recreate; the nginx builds stay in the volume)"
-        rx sh -c 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends python3 build-essential libpcre2-dev zlib1g-dev libssl-dev git curl procps >/dev/null'
+        rx sh -c 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends python3 build-essential libpcre2-dev zlib1g-dev libssl-dev git curl procps e2fsprogs >/dev/null'
     fi
     ok "python3 gcc make git curl libpcre2/zlib/openssl dev"
 else
