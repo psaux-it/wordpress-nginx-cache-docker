@@ -79,7 +79,7 @@ mode_clean() {
     rx sh -c "pkill -f 'delayproxy[.]py' || true
               for pf in $D/ng/*/logs/nginx.pid; do [ -f \"\$pf\" ] && kill \"\$(cat \"\$pf\")\" 2>/dev/null || true; done
               [ -f /tmp/fpm.pid ] && kill \"\$(cat /tmp/fpm.pid)\" 2>/dev/null || true
-              rm -rf /tmp/npp-cache /tmp/npp-other /tmp/fpm.sock /tmp/fpm.pid /tmp/fpm.log"
+              rm -rf /tmp/npp-cache /tmp/npp-other /tmp/npp-temp /tmp/fpm.sock /tmp/fpm.pid /tmp/fpm.log"
     ok "stopped"
     if [ "$MODE" = purge ]; then
         step "Deleting nginx builds (ng/, build/) and run/"
