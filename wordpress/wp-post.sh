@@ -538,8 +538,8 @@ if [[ "${_bootstrap_done}" != "1" ]]; then
         echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Failed to enable HTTP purge."
 
     # HTTP purge custom base URL
-    su -m -c "wp option patch update nginx_cache_settings nppp_http_purge_custom_url \"https://nginx/purge\" --path=\"${NPP_WEB_ROOT}\"" "${NPP_USER}" >/dev/null 2>&1 && \
-        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Purge Custom Base URL set to ${COLOR_CYAN}https://nginx/purge${COLOR_RESET}." || \
+    su -m -c "wp option patch update nginx_cache_settings nppp_http_purge_custom_url \"https://nginx/\" --path=\"${NPP_WEB_ROOT}\"" "${NPP_USER}" >/dev/null 2>&1 && \
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Purge Custom Base URL set to ${COLOR_CYAN}https://nginx/${COLOR_RESET}." || \
         echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Failed to set HTTP purge custom base URL."
 
     # Mark bootstrap complete
