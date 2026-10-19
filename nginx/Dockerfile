@@ -9,7 +9,8 @@
 ARG NGINX_FROM_IMAGE=nginx:1.31.6-trixie
 FROM ${NGINX_FROM_IMAGE} AS builder
 
-ARG NGX_CACHE_PURGE_VERSION=3.0.4
+# TEST: ngx_cache_purge v4 (unreleased). Pinned to a commit on releases/stable-4.0.
+ARG NGX_CACHE_PURGE_REF=5c2b7d909fe4c31c06deacef9be0dce65e30ceef
 ARG NGX_HEADERS_MORE_VERSION=0.39
 
 SHELL ["/bin/bash", "-exo", "pipefail", "-c"]
@@ -38,7 +39,7 @@ RUN git clone -b ${NGINX_VERSION}-${PKG_RELEASE%%~*} \
 RUN mkdir /tmp/packages \
     && /pkg-oss/build_module.sh -v "${NGINX_VERSION}" -f -y -o /tmp/packages \
         -n cachepurge \
-        "https://github.com/nginx-modules/ngx_cache_purge/archive/refs/tags/${NGX_CACHE_PURGE_VERSION}.tar.gz" \
+        "https://github.com/nginx-modules/ngx_cache_purge/archive/${NGX_CACHE_PURGE_REF}.tar.gz" \
     && /pkg-oss/build_module.sh -v "${NGINX_VERSION}" -f -y -o /tmp/packages \
         -n headersmore \
         "https://github.com/openresty/headers-more-nginx-module/archive/refs/tags/v${NGX_HEADERS_MORE_VERSION}.tar.gz" \
