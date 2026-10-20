@@ -184,6 +184,7 @@ services:
       - ${NGINX_CONF}:/etc/nginx/nginx.conf
       - ${NPP_NGINX_CONF}:/etc/nginx/conf.d/default.conf
       - ${NPP_NGINX_PARAMS_CONF}:/etc/nginx/fastcgi_params
+      - nginx_purge_state:/var/lib/nginx/cache-purge
       - ${NGINX_SSL_CERTS}:/etc/ssl:ro
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
@@ -276,6 +277,7 @@ volumes:
       type: tmpfs
       device: tmpfs
       o: size=1g
+  nginx_purge_state:
 
 networks:
   npp_network:
