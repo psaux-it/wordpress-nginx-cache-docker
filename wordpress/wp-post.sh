@@ -488,6 +488,11 @@ if [[ "${NPP_EDGE}" -eq 1 ]]; then
         su -m -c "wp option patch delete nginx_cache_settings nginx_cache_reject_extension --path=\"${NPP_WEB_ROOT}\"" "${NPP_USER}" >/dev/null 2>&1 || true
         su -m -c "wp option patch delete nginx_cache_settings nginx_cache_reject_regex --path=\"${NPP_WEB_ROOT}\"" "${NPP_USER}" >/dev/null 2>&1 || true
         su -m -c "wp option patch delete nginx_cache_settings nginx_cache_key_custom_regex --path=\"${NPP_WEB_ROOT}\"" "${NPP_USER}" >/dev/null 2>&1 || true
+
+        # Keep HTTP Purge paths in sync with the plugin defaults (re-seeded on activate)
+        su -m -c "wp option patch delete nginx_cache_settings nppp_http_purge_suffix --path=\"${NPP_WEB_ROOT}\"" "${NPP_USER}" >/dev/null 2>&1 || true
+        su -m -c "wp option patch delete nginx_cache_settings nppp_http_purge_all_path --path=\"${NPP_WEB_ROOT}\"" "${NPP_USER}" >/dev/null 2>&1 || true
+
         su -m -c "wp plugin activate \"${PLUGIN_NAME}\" --path=\"${NPP_WEB_ROOT}\" --quiet" "${NPP_USER}" >/dev/null 2>&1 && \
             echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-EDGE:${COLOR_RESET} Plugin re-activated — preload defaults refreshed." || \
             echo -e "${COLOR_RED}${COLOR_BOLD}NPP-EDGE:${COLOR_RESET} Plugin re-activation failed. Preload defaults may be stale."
