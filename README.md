@@ -8,7 +8,7 @@ Explore the **[NPP Main GitHub Repository](https://github.com/psaux-it/nginx-fas
 
 - ✅ **WordPress** (7.1) with **PHP-FPM** (8.4)
 - ✅ **MySQL** (8.4) for database management
-- ✅ **Nginx** FastCGI cache ready with (**Nginx** 1.31.6 + ngx_cache_purge v3.0.3 + ngx_headers_more v0.39)
+- ✅ **Nginx** FastCGI cache ready with (**Nginx** 1.31.6 + ngx_cache_purge v4.0.0 RC2 + ngx_headers_more v0.39)
 - ✅ **Redis** (7.4) for object caching and session management
 - ✅ **WP-CLI** ready for plugin and theme installations (check **.env**)
 - ✅ **phpMyAdmin** (5.2.3) ready
@@ -19,7 +19,7 @@ Explore the **[NPP Main GitHub Repository](https://github.com/psaux-it/nginx-fas
 - ✅ Installed a wide range of **PHP extensions**
 - ✅ Easily switch between the **stable** release and the **bleeding-edge** version of the **NPP**
 - ✅ **ripgrep** (15.2.0) installed **RG Purge** for blazing fast single URL purges
-- ✅ **safexec** (1.9.6) installed for hardened, privilege-dropped cache preload shell execution
+- ✅ **safexec** (1.9.7) installed for hardened, privilege-dropped cache preload shell execution
 - ✅ **mitmproxy** sidecar for full NPP plugin feature testing including Proxy Preload
 
 ## 🔒 Security & Proxy Features
