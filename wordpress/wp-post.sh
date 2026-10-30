@@ -547,6 +547,11 @@ if [[ "${_bootstrap_done}" != "1" ]]; then
         echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Purge Custom Base URL set to ${COLOR_CYAN}https://nginx/${COLOR_RESET}." || \
         echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Failed to set HTTP purge custom base URL."
 
+    # HTTP purge queue status path (ngx_cache_purge v4 cache_purge_queue_status location)
+    su -m -c "wp option patch update nginx_cache_settings nppp_http_purge_queue_status_path \"npp_purge_status\" --path=\"${NPP_WEB_ROOT}\"" "${NPP_USER}" >/dev/null 2>&1 && \
+        echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Purge Queue Status Path set to ${COLOR_CYAN}npp_purge_status${COLOR_RESET}." || \
+        echo -e "${COLOR_RED}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Failed to set purge queue status path."
+
     # Mark bootstrap complete
     su -m -c "wp option add npp_docker_defaults_applied \"1\" --path=\"${NPP_WEB_ROOT}\"" "${NPP_USER}" >/dev/null 2>&1 && \
         echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} Bootstrap flag set.." || \
