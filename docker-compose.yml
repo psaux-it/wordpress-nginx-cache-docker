@@ -199,17 +199,17 @@ services:
       - NPP_NGINX_CACHE_PATH=${NPP_NGINX_CACHE_PATH_}
     networks:
       npp_network:
-    mem_limit: "512MB"
-    mem_reservation: "256MB"
+    mem_limit: "1.5GB"
+    mem_reservation: "1GB"
     cpus: "1.0"
     deploy:
       resources:
         limits:
           cpus: "1"
-          memory: "512MB"
+          memory: "1.5GB"
         reservations:
           cpus: "0.5"
-          memory: "256MB"
+          memory: "1GB"
 
   mitmproxy:
     build:
