@@ -167,6 +167,23 @@ up_stack() {
 
 ver_ge() { [ "$(printf '%s\n%s\n' "$2" "$1" | sort -V | head -n1)" = "$2" ]; }   # ver_ge have need
 
+vnum_of() { sed -nE 's/.*[^0-9]([0-9]+\.[0-9]+)\.[0-9]+.*/\1/p' <<<"$1" | head -n1 || true; }   # "varnish-9.1.0 ..." -> 9.1
+
+# One line that names the version of the RUNNING varnish container. `varnishd -V` is the normal source, but not every
+# image accepts it through `docker exec` (varnish:stable answers "Error: -V must be the first argument"), so the CLI
+# banner of the running daemon is the fallback: it answers whenever `varnishadm ping` does. Only the line that names
+# varnish / vinyl is read - the banner also holds the kernel version ("Linux,6.1.0-..."), which must never be mistaken
+# for the Varnish version.
+varnish_version_line() {
+    local out line
+    out="$(vx varnishd -V 2>&1 || true)"; line="${out%%$'\n'*}"
+    if [ -n "$(vnum_of "$line")" ]; then printf '%s\n' "$line"; return 0; fi
+    out="$(vx varnishadm banner 2>&1 || true)"
+    line="$(grep -Eim1 '(varnish|vinyl)[-a-z ]*[0-9]+\.[0-9]+\.[0-9]+' <<<"$out" || true)"
+    [ -n "$line" ] && [ -n "$(vnum_of "$line")" ] && { printf '%s (from varnishadm banner)\n' "$line"; return 0; }
+    printf '%s\n' "${out%%$'\n'*}"
+}
+
 # ----------------------------------------------------------------- modes ----
 mode_shell() {
     need_docker; running || die "container $C is not running"
@@ -348,9 +365,9 @@ fi
 # ============================================================== LAYER 2 ====
 step "5/8 Origin reachable (nginx:8080 from $C) and varnish version"
 wait_for "origin answers http://$NGX:8080/wp-json/" rx curl -sf -o /dev/null -H "Host: $SITE_HOST" "http://$NGX:8080/wp-json/"
-VV="$(vx varnishd -V 2>&1 || true)"; VV="${VV%%$'\n'*}"
-VNUM="$(sed -nE 's/.*[^0-9]([0-9]+\.[0-9]+)\.[0-9]+.*/\1/p' <<<"$VV" | head -n1 || true)"
-[ -n "$VNUM" ] || die "cannot read the Varnish version from: $VV"
+VV="$(varnish_version_line)"
+VNUM="$(vnum_of "$VV")"
+[ -n "$VNUM" ] || die "cannot read the Varnish version (varnishd -V said: $(vx varnishd -V 2>&1 | head -n1 || true); CLI banner had no version line)"
 LEGACY_BAN=0
 if ! ver_ge "$VNUM" 6.5; then
     LEGACY_BAN=1
