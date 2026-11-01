@@ -1,0 +1,80 @@
+# Varnish / Vinyl Cache lab override                                               #
+# ----------------------------------------------------------------------------     #
+# Purpose: put a REAL Varnish container between the TLS edge and the FastCGI       #
+#          cache origin so NPP's Varnish sync can be tested on a container         #
+#          topology (not only on the in-process varnishd of varnish-test/).        #
+#                                                                                  #
+#   visitor -> nginx:443 (TLS edge) -> varnish:80 -> nginx:8080 (fastcgi_cache)    #
+#           -> wordpress-fpm:9001                                                  #
+#                                                                                  #
+# Use it ONLY together with the lab override (same pattern as the other labs):     #
+#   docker compose -f docker-compose.yml -f docker-compose.lab.yml \               #
+#                  -f docker-compose.varnish.yml up -d                             #
+# Normally driven by ./actionstart-varnish.sh, do not run it by hand unless you    #
+# know the nginx vhost is nginx/default.varnish.conf.                              #
+#                                                                                  #
+# What this file changes:                                                          #
+#   - adds the `varnish` service                                                   #
+#   - swaps the nginx vhost of `nginx` AND `wordpress` to default.varnish.conf     #
+#     (wordpress mounts the same file, so both containers must agree)              #
+#                                                                                  #
+# What it deliberately does NOT do:                                                #
+#   - no VCL mount: the image starts with its own default VCL and the lab script   #
+#     installs the VCL (extracted from the plugin's help.php) with `docker cp` +   #
+#     varnishreload, so the tested VCL is always the documented VCL.               #
+#   - no fixed subnet / static IPs: pinning ipam on the existing npp-wp network    #
+#     would force a network recreate. The script resolves the PHP container IP     #
+#     at runtime and writes it into the VCL ACL.                                   #
+#   - no ports published to the world (see the optional loopback debug port).      #
+# ----------------------------------------------------------------------------     #
+# Image tag:                                                                       #
+#   fresh  (default) latest release (Varnish 9.1 at the time of writing)           #
+#   old              release before fresh (9.0)                                    #
+#   stable           LTS line, currently Varnish 6.0.18: std.ban() does not exist  #
+#                    there, the example VCL of help.php needs the plain ban()      #
+#                    statement on it.                                              #
+# Override with:  VARNISH_IMAGE=varnish:old ./actionstart-varnish.sh               #
+# ----------------------------------------------------------------------------     #
+
+services:
+  varnish:
+    image: ${VARNISH_IMAGE:-varnish:fresh}
+    container_name: varnish
+    restart: unless-stopped
+    depends_on:
+      - nginx
+    environment:
+      - VARNISH_SIZE=${VARNISH_SIZE:-256M}
+      - VARNISH_HTTP_PORT=80
+    command: ["-p", "default_ttl=3600"]
+    tmpfs:
+      - /var/lib/varnish/varnishd:exec,mode=1777
+    ports:
+      - "127.0.0.1:${VARNISH_DEBUG_PORT:-6081}:80"
+    networks:
+      npp_network:
+    healthcheck:
+      test: ["CMD-SHELL", "varnishadm ping >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+    mem_limit: "512MB"
+    mem_reservation: "128MB"
+    cpus: "0.5"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512MB"
+        reservations:
+          cpus: "0.25"
+          memory: "128MB"
+
+  nginx:
+    volumes:
+      - ./nginx/default.varnish.conf:/etc/nginx/conf.d/default.conf
+
+  wordpress:
+    volumes:
+      - ./nginx/default.varnish.conf:/etc/nginx/conf.d/default.conf
