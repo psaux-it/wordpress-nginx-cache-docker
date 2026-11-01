@@ -313,11 +313,12 @@ else
     echo -e "${COLOR_GREEN}${COLOR_BOLD}NPP-WP-CLI:${COLOR_RESET} ${COLOR_CYAN}Permalink structure${COLOR_RESET} is already properly set. Skipping..."
 fi
 
-# Install the test labs (fail2ban-test, http-purge-test) OUTSIDE the web root.
-# Each lives on its own named volume (npp_lab, npp_purge_lab), so rsync --delete on the plugin dir never touches it.
+# Install the test labs (fail2ban-test, http-purge-test, varnish-test) OUTSIDE the web root.
+# Each lives on its own named volume (npp_lab, npp_purge_lab, npp_varnish_lab), so rsync --delete on the plugin dir never touches it.
 # Usage: npp_lab_install <source lab dir> [lab dir, default: NPP_LAB_DIR]
 NPP_LAB_DIR="${NPP_LAB_DIR:-/opt/npp-fail2ban-test}"
 NPP_PURGE_LAB_DIR="${NPP_PURGE_LAB_DIR:-/opt/npp-http-purge-test}"
+NPP_VARNISH_LAB_DIR="${NPP_VARNISH_LAB_DIR:-/opt/npp-varnish-test}"
 
 # A lab is only active when docker-compose.lab.yml mounted its volume.
 npp_lab_enabled() {
@@ -456,11 +457,13 @@ if [[ "${NPP_EDGE}" -eq 1 ]]; then
         # Fix line-ending issues
         find "${TMP_CLONE_DIR:?}" -type f -exec dos2unix {} + >/dev/null 2>&1
 
-        # Move fail2ban-test lab out of the web root, keep the plugin dir production-only.
+        # Move the test labs out of the web root, keep the plugin dir production-only.
         npp_lab_install "${TMP_CLONE_DIR:?}/fail2ban-test"
         rm -rf "${TMP_CLONE_DIR:?}/fail2ban-test"
         npp_lab_install "${TMP_CLONE_DIR:?}/http-purge-test" "${NPP_PURGE_LAB_DIR}"
         rm -rf "${TMP_CLONE_DIR:?}/http-purge-test"
+        npp_lab_install "${TMP_CLONE_DIR:?}/varnish-test" "${NPP_VARNISH_LAB_DIR}"
+        rm -rf "${TMP_CLONE_DIR:?}/varnish-test"
 
         # Sync clean staging dir → live plugin dir.
         mkdir -p "${PLUGIN_DIR:?}"
