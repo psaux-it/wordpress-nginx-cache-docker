@@ -174,9 +174,14 @@ vnum_of() { sed -nE 's/.*[^0-9]([0-9]+\.[0-9]+)\.[0-9]+.*/\1/p' <<<"$1" | head -
 # banner of the running daemon is the fallback: it answers whenever `varnishadm ping` does. Only the line that names
 # varnish / vinyl is read - the banner also holds the kernel version ("Linux,6.1.0-..."), which must never be mistaken
 # for the Varnish version.
+# varnish:stable ships /usr/local/bin/varnishd, a wrapper that prepends "-n /var/lib/varnish" to every call, so
+# "varnishd -V" reaches the daemon as "varnishd -n ... -V" and mgt_main.c rejects it (-V must be argv[1]).
+# /usr/sbin/varnishd is the real binary (the wrapper itself execs it): ask that one first.
+varnishd_v() { vx /usr/sbin/varnishd -V 2>&1 || vx varnishd -V 2>&1 || true; }
+
 varnish_version_line() {
     local out line
-    out="$(vx varnishd -V 2>&1 || true)"; line="${out%%$'\n'*}"
+    out="$(varnishd_v)"; line="${out%%$'\n'*}"
     if [ -n "$(vnum_of "$line")" ]; then printf '%s\n' "$line"; return 0; fi
     out="$(vx varnishadm banner 2>&1 || true)"
     line="$(grep -Eim1 '(varnish|vinyl)[-a-z ]*[0-9]+\.[0-9]+\.[0-9]+' <<<"$out" || true)"
@@ -199,7 +204,7 @@ mode_status() {
     if vhost_is_varnish; then ok "nginx runs the varnish vhost (default.varnish.conf)"; else warn "nginx runs the base vhost (topology is OFF)"; fi
     if topo_active; then
         step "Varnish ($VC)"
-        vx varnishd -V 2>&1 | head -n1 | sed 's/^/    /' || true
+        varnish_version_line | sed 's/^/    /'
         vx varnishadm vcl.list 2>&1 | sed 's/^/    /' || true
         printf '    health: %s\n' "$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$VC")"
         step "Active ACL + control key line of $VCL_REMOTE"
@@ -367,7 +372,7 @@ step "5/8 Origin reachable (nginx:8080 from $C) and varnish version"
 wait_for "origin answers http://$NGX:8080/wp-json/" rx curl -sf -o /dev/null -H "Host: $SITE_HOST" "http://$NGX:8080/wp-json/"
 VV="$(varnish_version_line)"
 VNUM="$(vnum_of "$VV")"
-[ -n "$VNUM" ] || die "cannot read the Varnish version (varnishd -V said: $(vx varnishd -V 2>&1 | head -n1 || true); CLI banner had no version line)"
+[ -n "$VNUM" ] || die "cannot read the Varnish version (varnishd -V said: $(varnishd_v | head -n1); CLI banner had no version line)"
 LEGACY_BAN=0
 if ! ver_ge "$VNUM" 6.5; then
     LEGACY_BAN=1
