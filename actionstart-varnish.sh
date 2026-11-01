@@ -471,7 +471,10 @@ else
 fi
 
 echo
-if [ "$FAILED" -ne 0 ]; then
+if [ "$FAILED" -ne 0 ] && [ "$VCL_VARIANT" != example ]; then
+    # A deliberately broken VCL fails some wiring checks by design: the topology tests classify it by behaviour.
+    printf '%sBROKEN VCL (%s): %s wiring check(s) failed as expected, handing over to the topology tests%s\n' "$Y" "$VCL_VARIANT" "$FAILED" "$N"
+elif [ "$FAILED" -ne 0 ]; then
     printf '%sWIRING CHECKS FAILED (%s ok, %s failed)%s\n' "$R" "$PASSED" "$FAILED" "$N"
     echo "  varnish log   : docker logs $VC | tail -n 30"
     echo "  active VCL    : docker exec $VC cat $VCL_REMOTE"
@@ -480,29 +483,35 @@ if [ "$FAILED" -ne 0 ]; then
     [ "$VCL_VARIANT" = example ] || echo "  (variant '$VCL_VARIANT' was installed on purpose)"
     exit 1
 fi
-printf '%sWIRING OK (%s checks)%s\n' "$G" "$PASSED" "$N"
+if [ "$FAILED" -eq 0 ]; then printf '%sWIRING OK (%s checks)%s\n' "$G" "$PASSED" "$N"; fi
 
 [ "$MODE" = prepare ] && { echo "  prepared: topology is up, VCL installed, NPP configured"; exit 0; }
 
 # ------------------------------------------------------------ topology tests ----
 if rx test -x "$D/run-topology-tests.sh"; then
-    step "Running run-topology-tests.sh ${PASS[*]:-(all phases)}"
+    step "Running run-topology-tests.sh ${PASS[*]:-(happy faults)}"
+    CACHE_DIR="$(env_val NPP_NGINX_CACHE_PATH_)"; CACHE_DIR="${CACHE_DIR:-/var/cache/nginx}"
     set +e
     docker exec -u root \
         -e "WP_PATH=$WP_PATH" -e "WP_USER=$WP_USER" -e "NPPP_INCLUDES=$INC" \
         -e "TOPO_SITE_HOST=$SITE_HOST" -e "TOPO_EDGE=https://$NGX" -e "TOPO_ORIGIN=http://$NGX:8080" \
         -e "TOPO_PURGE=https://$NGX:8443" -e "TOPO_VARNISH=http://$VC:80" -e "TOPO_KEY=$KEY" \
         -e "TOPO_VARNISH_CONTAINER=$VC" -e "TOPO_ACL_MODE=$ACL_MODE" -e "TOPO_PHP_IP=$PHP_IP" \
+        -e "TOPO_VCL_VARIANT=$VCL_VARIANT" -e "NPP_NGINX_CACHE_PATH=$CACHE_DIR" \
         "$C" "$D/run-topology-tests.sh" ${PASS[@]+"${PASS[@]}"}
     RC=$?
     set -e
     echo
-    if [ "$RC" -eq 0 ]; then printf '%sALL CHECKS PASSED%s\n' "$G" "$N"; else printf '%sTESTS FAILED (exit %s)%s\n' "$R" "$RC" "$N"; fi
+    case "$RC" in
+        0)  printf '%sALL CHECKS PASSED%s\n' "$G" "$N" ;;
+        77) printf '%sNOTHING RAN: every section was skipped (exit 77)%s\n' "$Y" "$N" ;;
+        *)  printf '%sTESTS FAILED (exit %s)%s\n' "$R" "$RC" "$N" ;;
+    esac
     echo "  cleanup : ./actionstart-varnish.sh --clean"
     exit "$RC"
 fi
-echo "  $D/run-topology-tests.sh is not in the plugin branch yet: nothing more to run."
+warn "$D/run-topology-tests.sh is missing in the deployed plugin: NO topology test ran (the wiring checks above are not the tests)"
 echo "  try it by hand:  curl -sk -I -H 'Host: $SITE_HOST' https://localhost/   (X-Varnish ids + NPP-FastCGI-Cache = both layers)"
 echo "                   ./actionstart-varnish.sh --shell   then: runuser -u $WP_USER -- wp --path=$WP_PATH npp purge   (Purge All)"
 echo "  cleanup : ./actionstart-varnish.sh --clean"
-exit 0
+exit 2
