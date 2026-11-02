@@ -177,9 +177,13 @@ wait_for() {  # wait_for "<label>" <cmd...>
 
 wpc() { dx -u root "$C" runuser -u "$WP_USER" -- env HOME=/tmp/wp-home wp --path="$WP_PATH" "$@"; }
 
+# The plugin loads its bootstrap (every nppp_* function) only for `wp npp ...` commands. A plain `wp eval` sees
+# none of them, so function_exists() would report "no Varnish-only mode" and skip the state reset. Load it first.
+WP_BOOT='if(function_exists("nppp_load_bootstrap")){nppp_load_bootstrap();}'
+
 # Forget the breaker / throttled warning (and, when the plugin has it, the VO failure) of a previous run.
 reset_varnish_state() {
-    wpc eval 'if(function_exists("nppp_varnish_only_reset_state")){nppp_varnish_only_reset_state();}elseif(function_exists("nppp_state_delete")){nppp_state_delete("varnish_breaker");nppp_state_delete("varnish_warn");}' >/dev/null 2>&1 || true
+    wpc eval "$WP_BOOT"'if(function_exists("nppp_varnish_only_reset_state")){nppp_varnish_only_reset_state();}elseif(function_exists("nppp_state_delete")){nppp_state_delete("varnish_breaker");nppp_state_delete("varnish_warn");}' >/dev/null 2>&1 || true
 }
 
 # Set one NPP option. `wp npp settings set` validates like the Settings page; when its environment
@@ -280,7 +284,7 @@ mode_status() {
             printf '    %-36s %s\n' "$k" "$(wpc option pluck nginx_cache_settings "$k" 2>/dev/null | tr -d '\r' || echo '?')"
         done
         printf '    %-36s %s\n' "Varnish-only mode (plugin view)" \
-            "$(wpc eval 'echo function_exists("nppp_varnish_only_mode") ? (nppp_varnish_only_mode() ? "ACTIVE" : "off") : "n/a (plugin has no VO)";' 2>/dev/null | tr -d '\r\n' || echo '?')"
+            "$(wpc eval "$WP_BOOT"'echo function_exists("nppp_varnish_only_mode") ? (nppp_varnish_only_mode() ? "ACTIVE" : "off") : "n/a (plugin has no VO)";' 2>/dev/null | tr -d '\r\n' || echo '?')"
     fi
     exit 0
 }
@@ -639,7 +643,7 @@ else
     chk "purge listener unknown path (:8443)"               404 "$(code -H "Host: $SITE_HOST" "https://$NGX:8443/nothing")"
     chk "purge listener status (:8443/npp_purge_status)"    200 "$(code -H "Host: $SITE_HOST" "https://$NGX:8443/npp_purge_status")"
 fi
-VO_VIEW="$(wpc eval 'echo function_exists("nppp_varnish_only_mode") ? (nppp_varnish_only_mode() ? "ACTIVE" : "off") : "n/a";' 2>/dev/null | tr -d '\r\n' || true)"
+VO_VIEW="$(wpc eval "$WP_BOOT"'echo function_exists("nppp_varnish_only_mode") ? (nppp_varnish_only_mode() ? "ACTIVE" : "off") : "n/a";' 2>/dev/null | tr -d '\r\n' || true)"
 [ "$VARNISH_ONLY" -eq 1 ] || { [ "$VO_VIEW" != "n/a" ] || VO_VIEW=off; }   # a plugin build without VO is "off" by definition
 chk "NPP sees Varnish-only mode as" "$([ "$VARNISH_ONLY" -eq 1 ] && echo ACTIVE || echo off)" "$VO_VIEW"
 
