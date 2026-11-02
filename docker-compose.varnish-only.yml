@@ -1,0 +1,38 @@
+# Varnish / Vinyl Cache ONLY lab override (NPP Varnish-only mode)                  #
+# ----------------------------------------------------------------------------     #
+# Purpose: test NPP's Varnish-only mode (VO) on a container topology where Nginx   #
+#          has NO cache of its own. Varnish is the only cache layer.               #
+#                                                                                  #
+#   visitor -> nginx:443 (TLS edge) -> varnish:80 -> nginx:8080 (NO cache)         #
+#           -> wordpress-fpm:9001                                                  #
+#                                                                                  #
+# This file is a THIRD override, it only makes sense on top of the varnish one      #
+# (the `varnish` service is defined there, not here):                              #
+#   docker compose -f docker-compose.yml -f docker-compose.lab.yml \               #
+#                  -f docker-compose.varnish.yml -f docker-compose.varnish-only.yml \
+#                  up -d                                                           #
+# Normally driven by ./actionstart-varnish.sh --varnish-only, do not run it by     #
+# hand unless you also configure NPP (see the script).                             #
+#                                                                                  #
+# What this file changes (and nothing else):                                       #
+#   - swaps the nginx vhost of `nginx` AND `wordpress` from default.varnish.conf   #
+#     to default.varnish-only.conf. A later file replaces a volume entry with the  #
+#     same target path, which is the same mechanism docker-compose.varnish.yml     #
+#     uses on top of the base file. Both containers must agree on the vhost.       #
+#                                                                                  #
+# What it deliberately does NOT do:                                                #
+#   - no change to the nginx_cache tmpfs or the bindfs mount of wordpress-fpm.     #
+#     They stay mounted and unused: the vhost has no fastcgi_cache_path, so        #
+#     nothing writes there. NPP's "Nginx Cache Directory" is pointed at a          #
+#     separate empty scratch directory by the script instead.                      #
+#   - no new service, no published port.                                           #
+# ----------------------------------------------------------------------------     #
+
+services:
+  nginx:
+    volumes:
+      - ./nginx/default.varnish-only.conf:/etc/nginx/conf.d/default.conf
+
+  wordpress:
+    volumes:
+      - ./nginx/default.varnish-only.conf:/etc/nginx/conf.d/default.conf

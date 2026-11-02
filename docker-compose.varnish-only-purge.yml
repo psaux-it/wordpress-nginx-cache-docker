@@ -1,0 +1,19 @@
+# Varnish-only lab + HTTP Purge listener (optional 5th compose file)               #
+# ----------------------------------------------------------------------------     #
+# Adds the :8443 NPP HTTP Purge listener next to the Varnish-only vhost so that     #
+# NPP can be tested with "Varnish-only mode ON + HTTP Purge ON". Only meaningful     #
+# on top of docker-compose.varnish-only.yml. Driven by:                              #
+#   ./actionstart-varnish.sh --vo-http-purge                                         #
+#                                                                                    #
+# The listener file is mounted into `nginx` AND `wordpress` (like the vhost, both    #
+# containers must see the same nginx configuration). The origin still has no cache.  #
+# ----------------------------------------------------------------------------     #
+
+services:
+  nginx:
+    volumes:
+      - ./nginx/varnish-only-purge-listener.conf:/etc/nginx/conf.d/npp-purge-listener.conf
+
+  wordpress:
+    volumes:
+      - ./nginx/varnish-only-purge-listener.conf:/etc/nginx/conf.d/npp-purge-listener.conf
