@@ -46,7 +46,7 @@ services:
     environment:
       - VARNISH_SIZE=${VARNISH_SIZE:-256M}
       - VARNISH_HTTP_PORT=80
-    command: ["-p", "default_ttl=3600"]
+    command: ["-p", "default_ttl=604800"]
     tmpfs:
       - /var/lib/varnish/varnishd:exec,mode=1777
     ports:
