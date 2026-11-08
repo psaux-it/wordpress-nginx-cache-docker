@@ -24,7 +24,6 @@ ENV FUSE_URL="https://github.com/libfuse/libfuse/releases/download/fuse-${LIBFUS
     FUSE_SIG_URL="https://github.com/libfuse/libfuse/releases/download/fuse-${LIBFUSE_VERSION}/fuse-${LIBFUSE_VERSION}.tar.gz.sig" \
     BINDFS_URL="https://github.com/mpartel/bindfs/archive/refs/tags/${BINDFS_VERSION}.tar.gz" \
     WP_CLI_URL="https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar" \
-    PHP_EXT_URL="https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions" \
     SAFEXEC_RELEASE_URL="https://github.com/psaux-it/nginx-fastcgi-cache-purge-and-preload/releases/download" \
     RIPGREP_URL="https://github.com/BurntSushi/ripgrep/releases/download"
 
@@ -67,7 +66,7 @@ RUN apt-get update && apt-get install -y \
     signify-openbsd
 
 # Get WP-CLI
-RUN curl -LO ${WP_CLI_URL} \
+RUN curl -fLO --retry 5 --retry-delay 3 --retry-all-errors ${WP_CLI_URL} \
     && chmod +x wp-cli.phar \
     && mv wp-cli.phar /usr/local/bin/wp
 
@@ -76,8 +75,8 @@ RUN curl -LO ${WP_CLI_URL} \
 
 # 1) First compile and install 'bindfs' dependencies
 RUN cd /tmp && \
-    curl -LO ${FUSE_URL} && \
-    curl -LO ${FUSE_SIG_URL} && \
+    curl -fLO --retry 5 --retry-delay 3 --retry-all-errors ${FUSE_URL} && \
+    curl -fLO --retry 5 --retry-delay 3 --retry-all-errors ${FUSE_SIG_URL} && \
     tar xzf fuse-${LIBFUSE_VERSION}.tar.gz && \
     signify-openbsd -V -m fuse-${LIBFUSE_VERSION}.tar.gz -p fuse-${LIBFUSE_VERSION}/signify/fuse-3.18.pub && \
     cd fuse-${LIBFUSE_VERSION} && \
@@ -98,7 +97,7 @@ RUN cd /tmp && \
 
 # 2) Now compile and Install 'bindfs'
 RUN cd /tmp && \
-    curl -LO ${BINDFS_URL} && \
+    curl -fLO --retry 5 --retry-delay 3 --retry-all-errors ${BINDFS_URL} && \
     tar xzf ${BINDFS_VERSION}.tar.gz && \
     cd bindfs-${BINDFS_VERSION} && \
     ./autogen.sh && \
@@ -109,7 +108,7 @@ RUN cd /tmp && \
     rm -rf bindfs-${BINDFS_VERSION} ${BINDFS_VERSION}.tar.gz
 
 # Install PHP extensions
-ADD --chmod=0755 ${PHP_EXT_URL} /usr/local/bin/
+COPY --chmod=0755 --from=ghcr.io/mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 RUN install-php-extensions ${PHP_EXTENSIONS}
 
 # Install safexec
@@ -118,8 +117,8 @@ RUN if [ "${INSTALL_SAFEXEC}" = "true" ]; then \
         ARCH=$(dpkg --print-architecture) && \
         BASE_URL="${SAFEXEC_RELEASE_URL}/${SAFEXEC_RELEASE_TAG}" && \
         DEB="safexec_${SAFEXEC_VERSION}_${ARCH}.deb" && \
-        wget -q "${BASE_URL}/SHA256SUMS"    -O /tmp/safexec-SHA256SUMS && \
-        wget -q "${BASE_URL}/${DEB}"        -O "/tmp/${DEB}" && \
+        wget -q --retry-on-http-error=502,503,504 "${BASE_URL}/SHA256SUMS"    -O /tmp/safexec-SHA256SUMS && \
+        wget -q --retry-on-http-error=502,503,504 "${BASE_URL}/${DEB}"        -O "/tmp/${DEB}" && \
         cd /tmp && sha256sum -c safexec-SHA256SUMS --ignore-missing && \
         apt-get install -y "/tmp/${DEB}" && \
         rm -f "/tmp/${DEB}" /tmp/safexec-SHA256SUMS && \
@@ -131,7 +130,7 @@ RUN if [ "${INSTALL_SAFEXEC}" = "true" ]; then \
 # Install ripgrep (latest stable)
 RUN ARCH=$(dpkg --print-architecture) && \
     DEB="ripgrep_${RIPGREP_VERSION}-1_${ARCH}.deb" && \
-    wget -q "${RIPGREP_URL}/${RIPGREP_VERSION}/${DEB}" -O "/tmp/${DEB}" && \
+    wget -q --retry-on-http-error=502,503,504 "${RIPGREP_URL}/${RIPGREP_VERSION}/${DEB}" -O "/tmp/${DEB}" && \
     dpkg -i "/tmp/${DEB}" && \
     rm -f "/tmp/${DEB}" && \
     echo "ripgrep $(rg --version | head -n1) installed successfully"
