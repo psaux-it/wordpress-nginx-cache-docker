@@ -44,6 +44,7 @@ RUN apt-get update && apt-get install -y \
     sed \
     coreutils \
     wget \
+    wget2 \
     cpulimit \
     # Install dependencies for service health checks
     mariadb-client \
