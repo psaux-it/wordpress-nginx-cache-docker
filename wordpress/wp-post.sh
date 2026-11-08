@@ -441,7 +441,9 @@ if [[ "${NPP_EDGE}" -eq 1 ]]; then
             "${TMP_CLONE_DIR:?}/.github" \
             "${TMP_CLONE_DIR:?}/misc" \
             "${TMP_CLONE_DIR:?}/safexec" \
-            "${TMP_CLONE_DIR:?}/tests"
+            "${TMP_CLONE_DIR:?}/tests" \
+            "${TMP_CLONE_DIR:?}/wget-test" \
+            "${TMP_CLONE_DIR:?}/cloudflare-test"
         rm -f \
             "${TMP_CLONE_DIR:?}/README.md" \
             "${TMP_CLONE_DIR:?}/CONTRIBUTING.md" \
